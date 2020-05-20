@@ -1,6 +1,14 @@
 --- a/gdal/configure.ac
 +++ b/gdal/configure.ac
-@@ -1230,10 +1230,11 @@ else
+@@ -1214,6 +1214,7 @@ dnl ---------------------------------------------------------------------------
+ dnl PROJ.6 related stuff
+ dnl ---------------------------------------------------------------------------
+ 
++PKG_PROG_PKG_CONFIG([0.21])
+ AC_MSG_CHECKING([for PROJ >= 6 library])
+ 
+ AC_ARG_WITH(proj,[  --with-proj=ARG Compile with PROJ.x (ARG=yes or path)],,)
+@@ -1230,10 +1231,8 @@ else
  
    if test "x$with_proj" = "xyes" -o "x$with_proj" = "x"; then
      ORIG_LIBS="$LIBS"
@@ -8,39 +16,17 @@
 -    AC_LANG_PUSH([C++])
 -    AC_CHECK_LIB(proj,proj_create_from_wkt,PROJ_FOUND=yes,PROJ_FOUND=no,)
 -    AC_LANG_POP([C++])
-+    PKG_PROG_PKG_CONFIG([0.21])
 +    PKG_CHECK_MODULES([PROJ], [proj >= 6.0.0], [PROJ_FOUND=yes], [PROJ_FOUND=no])
-+    LIBS="$PROJ_LIBS $ORIG_LIBS"
-+    CFLAGS="$PROJ_CFLAGS $CFLAGS"
 +    PROJ_INCLUDE="$PROJ_CFLAGS"
      if test "$PROJ_FOUND" = "no"; then
          AC_LANG_PUSH([C++])
          AC_CHECK_LIB(proj,internal_proj_create_from_wkt,PROJ_FOUND=yes,PROJ_FOUND=no,)
-@@ -1839,10 +1840,10 @@ elif test "$with_png" = "internal" ; then
-   echo "using internal png code."
- 
- else
--
-+  PKG_CHECK_MODULES([PNG], [libpng >= 1.0.0],,)
-   PNG_SETTING=external
--  LIBS="-L$with_png -L$with_png/lib -lpng $LIBS"
--  EXTRA_INCLUDES="-I$with_png -I$with_png/include $EXTRA_INCLUDES"
-+  LIBS="$PNG_LIBS $LIBS"
-+  EXTRA_INCLUDES="$PNG_CFLAGS $EXTRA_INCLUDES"
- 
-   echo "using libpng from $with_png."
- 
-@@ -1978,21 +1979,14 @@ AC_MSG_CHECKING([for libtiff])
+@@ -1978,21 +1977,9 @@ AC_MSG_CHECKING([for libtiff])
  if test "x${with_libtiff}" = "xyes" -o "x${with_libtiff}" = "x" ; then
  
    dnl Only automatically pick up the external libtiff if it is >= 4.0.
 -  AC_CHECK_LIB(tiff,TIFFScanlineSize64,TIFF_SETTING=external HAVE_BIGTIFF=yes,TIFF_SETTING=internal HAVE_BIGTIFF=yes,)
-+  PKG_PROG_PKG_CONFIG([0.21])
 +  PKG_CHECK_MODULES([TIFF], [libtiff-4 >= 4.0.0], [TIFF_SETTING=external HAVE_BIGTIFF=yes], [TIFF_SETTING=internal HAVE_BIGTIFF=yes])
-+  TIFF_SETTING=external
-+  LIBS="$TIFF_LIBS $LIBS"
-+  CFLAGS="$TIFF_CFLAGS $CFLAGS"
-+  EXTRA_INCLUDES="$TIFF_CFLAGS $EXTRA_INCLUDES"
  
 -  if test "$TIFF_SETTING" = "external" ; then
 -    dnl Cygwin takes a somewhat restrictive view of what should be exported
@@ -58,31 +44,107 @@
  
  elif test "x${with_libtiff}" = "xno" ; then
  
-@@ -2042,7 +2036,12 @@ if test "$with_geotiff" = "yes" -o "$with_geotiff" = "" ; then
+@@ -2042,7 +2029,8 @@ if test "$with_geotiff" = "yes" -o "$with_geotiff" = "" ; then
      GEOTIFF_SETTING=internal
    else
      dnl We now require libgeotiff 1.5.0
 -    AC_CHECK_LIB(geotiff,GTIFAttachPROJContext,GEOTIFF_SETTING=external,GEOTIFF_SETTING=internal)
-+    PKG_PROG_PKG_CONFIG([0.21])
 +    PKG_CHECK_MODULES([GEOTIFF], [libgeotiff >= 1.5.0], [GEOTIFF_SETTING=external], [GEOTIFF_SETTING=internal])
-+    LIBS="$GEOTIFF_LIBS $LIBS"
-+    CFLAGS="$GEOTIFF_CFLAGS $CFLAGS"
-+    EXTRA_INCLUDES="$GEOTIFF_CFLAGS $EXTRA_INCLUDES"
 +    GEOTIFF_INCLUDE="$GEOTIFF_CFLAGS"
  
    fi
  
-@@ -4842,7 +4841,8 @@ dnl ---------------------------------------------------------------------------
+@@ -2649,6 +2637,10 @@ if test x"$with_hdf4" = x"no" ; then
+ 
+   echo "hdf4 support disabled."
+ 
++elif test x"$with_hdf4" = x"yes" ; then
++  PKG_CHECK_MODULES([HDF4], [hdf4], [HAVE_HDF4=yes], [HAVE_HDF4=no])
++  PKG_CHECK_MODULES([HDF4], [hdf4 >= 4.2.5], [HDF4_HAS_MAXOPENFILES=yes], [HDF4_HAS_MAXOPENFILES=no])
++  HDF4_INCLUDE="$HDF4_CFLAGS"
+ else
+ 
+   if test x"$with_hdf4" = x"yes" -o x"$with_hdf4" = x"" ; then
+@@ -2779,7 +2771,6 @@ elif test "$with_hdf5" = "yes" -o "$with_hdf5" = "" ; then
+     # Test that the package found is for the right architecture
+     saved_LIBS="$LIBS"
+     LIBS="$HDF5_LIBS"
+-    AC_CHECK_LIB(hdf5,H5Fopen, [HAVE_HDF5=yes], [HAVE_HDF5=no])
+     LIBS="$saved_LIBS"
+ 
+     if test "$HAVE_HDF5" = "yes"; then
+@@ -4058,29 +4049,16 @@ AC_ARG_WITH(curl,
+ dnl Clear some cache variables
+ unset ac_cv_path_LIBCURL
+ 
+-if test "`basename xx/$with_curl`" = "curl-config" ; then
+-  LIBCURL_CONFIG="$with_curl"
+-elif test "$with_curl" = "no" ; then
+-  LIBCURL_CONFIG=no
++if test "$with_curl" = "yes" ; then
++  PKG_CHECK_MODULES([CURL], [libcurl], [CURL_SETTING=yes], [CURL_SETTING=no])
+ else
+-  AC_PATH_PROG(LIBCURL_CONFIG, curl-config, no)
+-fi
+-
+-if test "$LIBCURL_CONFIG" != "no" ; then
+-
+-  CURL_VERNUM=`$LIBCURL_CONFIG --vernum`
+-  CURL_VER=`$LIBCURL_CONFIG --version | awk '{print $2}'`
+-
+-  AC_MSG_RESULT([        found libcurl version $CURL_VER])
+-
+-  AC_CHECK_LIB(curl,curl_global_init,CURL_SETTING=yes,CURL_SETTING=no,`$LIBCURL_CONFIG --libs`)
+-
++  CURL_SETTING=no
+ fi
+ 
+ if test "$CURL_SETTING" = "yes" ; then
+ 
+-  CURL_INC=`$LIBCURL_CONFIG --cflags`
+-  CURL_LIB=`$LIBCURL_CONFIG --libs`
++  CURL_INC="$CURL_CFLAGS"
++  CURL_LIB="$CURL_LIBS"
+ m4_foreach_w([frmt],CURL_FORMATS,[
+   driver_enabled=m4_join([_],[$INTERNAL_FORMAT],frmt,[ENABLED])
+   if test "x$driver_enabled" = "xyes"; then
+@@ -4120,7 +4098,6 @@ if test "x$with_xml2" = "xyes" -o "x$with_xml2" = "x" ; then
+   if test "${HAVE_LIBXML2}" = "yes"; then
+     SAVED_LIBS="${LIBS}"
+     LIBS="${LIBXML2_LIBS}"
+-    AC_CHECK_LIB(xml2,xmlParseDoc,HAVE_LIBXML2=yes,HAVE_LIBXML2=no)
+     LIBS="${SAVED_LIBS}"
+   fi
+ 
+@@ -4242,8 +4219,7 @@ dnl Check for SQLite (only if SpatiaLite is not detected)
+ dnl ---------------------------------------------------------------------------
+ 
+ if test "${HAVE_SPATIALITE}" = "no" -o "${HAVE_SPATIALITE}" = "dlopen" ; then
+-    SQLITE3_REQ_VERSION="3.0.0"
+-    AX_LIB_SQLITE3($SQLITE3_REQ_VERSION)
++    PKG_CHECK_MODULES([SQLITE3], [sqlite3 >= 3.0.0], [HAVE_SQLITE3=yes], [HAVE_SQLITE3=no])
+ 
+     if test "$HAVE_SQLITE3" = "yes"; then
+         LIBS="$SQLITE3_LDFLAGS $LIBS"
+@@ -4596,7 +4572,7 @@ dnl ---------------------------------------------------------------------------
+ dnl Check if geos library is available.
+ dnl ---------------------------------------------------------------------------
+ 
+-GEOS_INIT(3.1.0)
++PKG_CHECK_MODULES([GEOS], [geos >= 3.1.0], [HAVE_GEOS=yes], [HAVE_GEOS=no])
+ HAVE_GEOS_RESULT="no"
+ if test "${HAVE_GEOS}" = "yes" ; then
+ 
+@@ -4842,7 +4818,7 @@ dnl ---------------------------------------------------------------------------
  AC_ARG_WITH(libjson-c,[  --with-libjson-c[=ARG]       Include libjson-c support (ARG=internal or libjson-c directory)],,)
  
  if test "$with_libjson_c" = "external" -o "$with_libjson_c" = "" -o "$with_libjson_c" = "yes" ; then
 -  AC_CHECK_LIB(json-c,json_object_set_serializer,LIBJSONC_SETTING=external,LIBJSONC_SETTING=internal,)
-+  PKG_PROG_PKG_CONFIG([0.21])
 +  PKG_CHECK_MODULES([LIBJSONC], [json-c >= 0.1.0], [LIBJSONC_SETTING=external], [LIBJSONC_SETTING=internal])
  elif test "$with_libjson_c" = "internal" ; then
    LIBJSONC_SETTING=internal
  elif test "$with_libjson_c" != "no"; then
-@@ -4854,16 +4854,8 @@ fi
+@@ -4854,16 +4830,7 @@ fi
  
  if test "$LIBJSONC_SETTING" = "external" ; then
    AC_MSG_RESULT([using pre-installed libjson-c])
@@ -96,8 +158,15 @@
 -  else
 -    AC_MSG_ERROR([could not find json-c/json.h])
 -  fi
-+  LIBS="$LIBJSONC_LIBS $LIBS"
 +  JSON_INCLUDE="$LIBJSONC_CFLAGS"
  else
      JSON_INCLUDE="-I\$(GDAL_ROOT)/ogr/ogrsf_frmts/geojson/libjson"
      AC_MSG_RESULT([using internal libjson-c code])
+@@ -5951,7 +5918,6 @@ else
+     # Test that the package found is for the right architecture
+     saved_LIBS="$LIBS"
+     LIBS="$EXR_LIBS"
+-    AC_CHECK_LIB(IlmImf,ImfTiledInputReadTile, [HAVE_EXR=yes], [HAVE_EXR=no])
+     LIBS="$saved_LIBS"
+ 
+     if test "$HAVE_EXR" = "yes"; then
