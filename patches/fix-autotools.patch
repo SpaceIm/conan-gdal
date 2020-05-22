@@ -8,53 +8,34 @@
  AC_MSG_CHECKING([for PROJ >= 6 library])
  
  AC_ARG_WITH(proj,[  --with-proj=ARG Compile with PROJ.x (ARG=yes or path)],,)
-@@ -1230,10 +1231,8 @@ else
- 
-   if test "x$with_proj" = "xyes" -o "x$with_proj" = "x"; then
+@@ -1264,7 +1265,7 @@ else
      ORIG_LIBS="$LIBS"
--    LIBS="-lproj $ORIG_LIBS"
--    AC_LANG_PUSH([C++])
+     LIBS="-L$with_proj/lib -lproj -lsqlite3 $with_proj_extra_lib_for_test $ORIG_LIBS"
+     AC_LANG_PUSH([C++])
 -    AC_CHECK_LIB(proj,proj_create_from_wkt,PROJ_FOUND=yes,PROJ_FOUND=no,)
--    AC_LANG_POP([C++])
-+    PKG_CHECK_MODULES([PROJ], [proj >= 6.0.0], [PROJ_FOUND=yes], [PROJ_FOUND=no])
-+    PROJ_INCLUDE="$PROJ_CFLAGS"
++    AC_CHECK_LIB(proj,proj_create_from_wkt,PROJ_FOUND=yes,PROJ_FOUND=no,$LIBS)
+     AC_LANG_POP([C++])
      if test "$PROJ_FOUND" = "no"; then
-         AC_LANG_PUSH([C++])
-         AC_CHECK_LIB(proj,internal_proj_create_from_wkt,PROJ_FOUND=yes,PROJ_FOUND=no,)
-@@ -1978,21 +1977,9 @@ AC_MSG_CHECKING([for libtiff])
- if test "x${with_libtiff}" = "xyes" -o "x${with_libtiff}" = "x" ; then
+         LIBS="-L$with_proj/lib -lproj -lsqlite3 $with_proj_extra_lib_for_test $ORIG_LIBS"
+@@ -2019,7 +2020,7 @@ else
+   AC_MSG_RESULT([using libtiff from ${with_libtiff}.])
  
-   dnl Only automatically pick up the external libtiff if it is >= 4.0.
--  AC_CHECK_LIB(tiff,TIFFScanlineSize64,TIFF_SETTING=external HAVE_BIGTIFF=yes,TIFF_SETTING=internal HAVE_BIGTIFF=yes,)
-+  PKG_CHECK_MODULES([TIFF], [libtiff-4 >= 4.0.0], [TIFF_SETTING=external HAVE_BIGTIFF=yes], [TIFF_SETTING=internal HAVE_BIGTIFF=yes])
+   dnl Check for the BigTIFF enabled library (libtiff >= 4.0)
+-  AC_CHECK_LIB(tiff,TIFFScanlineSize64,HAVE_BIGTIFF=yes,HAVE_BIGTIFF=no,)
++  AC_CHECK_LIB(tiff,TIFFScanlineSize64,HAVE_BIGTIFF=yes,HAVE_BIGTIFF=no,$LIBS)
  
--  if test "$TIFF_SETTING" = "external" ; then
--    dnl Cygwin takes a somewhat restrictive view of what should be exported
--    dnl from the dll, so don't use the external library if missing semi-private
--    dnl functions.
--    AC_CHECK_LIB(tiff,_TIFFsetDoubleArray,TIFF_SETTING=external,TIFF_SETTING=internal,)
--  fi
+ fi
  
--  if test "$TIFF_SETTING" = "external" ; then
--    LIBS="-ltiff $LIBS"
--    AC_MSG_RESULT([using pre-installed libtiff.])
--  else
--    AC_MSG_RESULT([using internal TIFF code.])
--  fi
+@@ -2089,7 +2090,7 @@ else
  
- elif test "x${with_libtiff}" = "xno" ; then
+   dnl We now require libgeotiff 1.5.0
+   dnl first check if $with_geotiff/lib has the library:
+-  AC_CHECK_LIB(geotiff,GTIFAttachPROJContext,GEOTIFF_SETTING=external,GEOTIFF_SETTING=not_found,-L$with_geotiff/lib)
++  AC_CHECK_LIB(geotiff,GTIFAttachPROJContext,GEOTIFF_SETTING=external,GEOTIFF_SETTING=not_found,$LIBS)
  
-@@ -2042,7 +2029,8 @@ if test "$with_geotiff" = "yes" -o "$with_geotiff" = "" ; then
-     GEOTIFF_SETTING=internal
-   else
-     dnl We now require libgeotiff 1.5.0
--    AC_CHECK_LIB(geotiff,GTIFAttachPROJContext,GEOTIFF_SETTING=external,GEOTIFF_SETTING=internal)
-+    PKG_CHECK_MODULES([GEOTIFF], [libgeotiff >= 1.5.0], [GEOTIFF_SETTING=external], [GEOTIFF_SETTING=internal])
-+    GEOTIFF_INCLUDE="$GEOTIFF_CFLAGS"
- 
-   fi
- 
-@@ -2649,6 +2637,10 @@ if test x"$with_hdf4" = x"no" ; then
+   if test $GEOTIFF_SETTING = "external" ; then
+     LIBS="-L$with_geotiff/lib -lgeotiff $LIBS"
+@@ -2649,6 +2650,10 @@ if test x"$with_hdf4" = x"no" ; then
  
    echo "hdf4 support disabled."
  
@@ -65,7 +46,7 @@
  else
  
    if test x"$with_hdf4" = x"yes" -o x"$with_hdf4" = x"" ; then
-@@ -2779,7 +2771,6 @@ elif test "$with_hdf5" = "yes" -o "$with_hdf5" = "" ; then
+@@ -2779,7 +2784,6 @@ elif test "$with_hdf5" = "yes" -o "$with_hdf5" = "" ; then
      # Test that the package found is for the right architecture
      saved_LIBS="$LIBS"
      LIBS="$HDF5_LIBS"
@@ -73,7 +54,28 @@
      LIBS="$saved_LIBS"
  
      if test "$HAVE_HDF5" = "yes"; then
-@@ -4058,29 +4049,16 @@ AC_ARG_WITH(curl,
+@@ -3714,18 +3718,15 @@ MYSQL_CONFIG=no
+ AC_ARG_WITH(mysql,[  --with-mysql[=ARG]      Include MySQL (ARG=path to mysql_config) [[default=no]]],,)
+ 
+ if test "$with_mysql" = "yes" ; then
+-  AC_PATH_PROG(MYSQL_CONFIG, mysql_config, no)
++  HAVE_MYSQL=yes
+ else
+-    if test "x$with_mysql" != "x" ; then
+-      MYSQL_CONFIG=$with_mysql
+-    fi
++  HAVE_MYSQL=no
+ fi
+ 
+ AC_MSG_CHECKING([for MySQL])
+ 
+ if test "$MYSQL_CONFIG" = "no" ; then
+ 
+-  HAVE_MYSQL=no
+   MYSQL_LIB=
+   MYSQL_INC=
+ 
+@@ -4058,29 +4059,16 @@ AC_ARG_WITH(curl,
  dnl Clear some cache variables
  unset ac_cv_path_LIBCURL
  
@@ -108,7 +110,7 @@
  m4_foreach_w([frmt],CURL_FORMATS,[
    driver_enabled=m4_join([_],[$INTERNAL_FORMAT],frmt,[ENABLED])
    if test "x$driver_enabled" = "xyes"; then
-@@ -4120,7 +4098,6 @@ if test "x$with_xml2" = "xyes" -o "x$with_xml2" = "x" ; then
+@@ -4120,7 +4108,6 @@ if test "x$with_xml2" = "xyes" -o "x$with_xml2" = "x" ; then
    if test "${HAVE_LIBXML2}" = "yes"; then
      SAVED_LIBS="${LIBS}"
      LIBS="${LIBXML2_LIBS}"
@@ -116,53 +118,53 @@
      LIBS="${SAVED_LIBS}"
    fi
  
-@@ -4242,8 +4219,7 @@ dnl Check for SQLite (only if SpatiaLite is not detected)
+@@ -4241,9 +4228,12 @@ dnl ---------------------------------------------------------------------------
+ dnl Check for SQLite (only if SpatiaLite is not detected)
  dnl ---------------------------------------------------------------------------
  
++HAVE_SQLITE3=no
++AC_ARG_WITH(sqlite3, AS_HELP_STRING([--with-sqlite3[=ARG]], [use SQLite 3 library (ARG=yes or no)]),,)
  if test "${HAVE_SPATIALITE}" = "no" -o "${HAVE_SPATIALITE}" = "dlopen" ; then
 -    SQLITE3_REQ_VERSION="3.0.0"
 -    AX_LIB_SQLITE3($SQLITE3_REQ_VERSION)
-+    PKG_CHECK_MODULES([SQLITE3], [sqlite3 >= 3.0.0], [HAVE_SQLITE3=yes], [HAVE_SQLITE3=no])
++    if test x"$with_sqlite3" = x"yes" ; then
++        PKG_CHECK_MODULES([SQLITE3], [sqlite3 >= 3.0.0], [HAVE_SQLITE3=yes], [HAVE_SQLITE3=no])
++    fi
  
      if test "$HAVE_SQLITE3" = "yes"; then
          LIBS="$SQLITE3_LDFLAGS $LIBS"
-@@ -4596,7 +4572,7 @@ dnl ---------------------------------------------------------------------------
+@@ -4596,8 +4586,12 @@ dnl ---------------------------------------------------------------------------
  dnl Check if geos library is available.
  dnl ---------------------------------------------------------------------------
  
 -GEOS_INIT(3.1.0)
-+PKG_CHECK_MODULES([GEOS], [geos >= 3.1.0], [HAVE_GEOS=yes], [HAVE_GEOS=no])
++AC_ARG_WITH(geos, AS_HELP_STRING([--with-geos[=ARG]], [Include GEOS support (ARG=yes or no)]),,)
  HAVE_GEOS_RESULT="no"
++if test x"$with_geos" = x"no" ; then
++  AC_MSG_RESULT([GEOS support disabled])
++else
++  PKG_CHECK_MODULES([GEOS], [geos >= 3.1.0], [HAVE_GEOS=yes], [HAVE_GEOS=no])
  if test "${HAVE_GEOS}" = "yes" ; then
  
-@@ -4842,7 +4818,7 @@ dnl ---------------------------------------------------------------------------
- AC_ARG_WITH(libjson-c,[  --with-libjson-c[=ARG]       Include libjson-c support (ARG=internal or libjson-c directory)],,)
+   AC_MSG_NOTICE([Using C API from GEOS $GEOS_VERSION])
+@@ -4606,6 +4600,7 @@ if test "${HAVE_GEOS}" = "yes" ; then
+   LIBS="${GEOS_LIBS} ${LIBS}"
+   HAVE_GEOS_RESULT="yes"
+ fi
++fi
  
- if test "$with_libjson_c" = "external" -o "$with_libjson_c" = "" -o "$with_libjson_c" = "yes" ; then
--  AC_CHECK_LIB(json-c,json_object_set_serializer,LIBJSONC_SETTING=external,LIBJSONC_SETTING=internal,)
-+  PKG_CHECK_MODULES([LIBJSONC], [json-c >= 0.1.0], [LIBJSONC_SETTING=external], [LIBJSONC_SETTING=internal])
- elif test "$with_libjson_c" = "internal" ; then
+ dnl ---------------------------------------------------------------------------
+ dnl Check if SFCGAL library is available.
+@@ -4847,7 +4842,7 @@ elif test "$with_libjson_c" = "internal" ; then
    LIBJSONC_SETTING=internal
  elif test "$with_libjson_c" != "no"; then
-@@ -4854,16 +4830,7 @@ fi
- 
- if test "$LIBJSONC_SETTING" = "external" ; then
-   AC_MSG_RESULT([using pre-installed libjson-c])
--  LIBS="-ljson-c $LIBS"
--  if test "$with_libjson_c" != "" -a "$with_libjson_c" != "yes" -a "$with_libjson_c" != "external" ; then
--    JSON_INCLUDE="-I$with_libjson_c/include/json-c"
--  elif test -f "/usr/include/json-c/json.h"; then
--    JSON_INCLUDE="-I/usr/include/json-c"
--  elif test -f "/usr/local/include/json-c/json.h"; then
--    JSON_INCLUDE="-I/usr/local/include/json-c"
--  else
--    AC_MSG_ERROR([could not find json-c/json.h])
--  fi
-+  JSON_INCLUDE="$LIBJSONC_CFLAGS"
+   LIBS="-L$with_libjson_c/lib $LIBS"
+-  AC_CHECK_LIB(json-c,json_object_set_serializer,LIBJSONC_SETTING=external,LIBJSONC_SETTING=internal,-L$with_libjson_c/lib)
++  AC_CHECK_LIB(json-c,json_object_set_serializer,LIBJSONC_SETTING=external,LIBJSONC_SETTING=internal,$LIBS)
  else
-     JSON_INCLUDE="-I\$(GDAL_ROOT)/ogr/ogrsf_frmts/geojson/libjson"
-     AC_MSG_RESULT([using internal libjson-c code])
-@@ -5951,7 +5918,6 @@ else
+   AC_MSG_ERROR([libjson-c (internal or external) is required])
+ fi
+@@ -5951,7 +5946,6 @@ else
      # Test that the package found is for the right architecture
      saved_LIBS="$LIBS"
      LIBS="$EXR_LIBS"
