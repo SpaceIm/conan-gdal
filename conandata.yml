@@ -10,3 +10,5 @@ patches:
       base_path: "source_subfolder"
     - patch_file: "patches/fix-include-jsonc.patch"
       base_path: "source_subfolder"
+    - patch_file: "patches/fix-include-xerces.patch"
+      base_path: "source_subfolder"
