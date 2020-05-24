@@ -1,7 +1,7 @@
 import glob
 import os
 
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from conans import ConanFile, AutoToolsBuildEnvironment, VisualStudioBuildEnvironment, tools
 
 class GdalConan(ConanFile):
     name = "gdal"
@@ -138,6 +138,7 @@ class GdalConan(ConanFile):
     }
 
     _autotools= None
+    _nmake_args = None
 
     @property
     def _source_subfolder(self):
@@ -167,21 +168,24 @@ class GdalConan(ConanFile):
         #     del self.options.with_tiledb
         if tools.Version(self.version) < "3.1.0":
             del self.options.with_exr
+        if self.settings.compiler == "Visual Studio":
+            del self.options.with_png
+            del self.options.with_null
 
     def build_requirements(self):
-        if self.settings.compiler != "Visual Studio" and \
-           "CONAN_BASH_PATH" not in os.environ and \
-           tools.os_info.detect_windows_subsystem() != "msys2":
+        if self.settings.os == "Windows" and self.settings.compiler != "Visual Studio" and \
+           "CONAN_BASH_PATH" not in os.environ and tools.os_info.detect_windows_subsystem() != "msys2":
             self.build_requires("msys2/20190524")
         if self.settings.os == "Linux":
             self.build_requires("autoconf/2.69")
 
     def requirements(self):
         self.requires("json-c/0.13.1")
-        self.requires("libgeotiff/1.5.1")
+        self.requires("libgeotiff/1.6.0")
         # self.requires("libopencad/0.0.2") # TODO: use conan recipe when available instead of internal one
         self.requires("libtiff/4.1.0")
-        self.requires("proj/7.0.0")
+        # self.requires("proj/7.0.0")
+        self.requires("proj/6.3.1")
         if tools.Version(self.version) >= "3.1.0":
             self.requires("flatbuffers/1.12.0")
         if self.options.with_zlib:
@@ -196,7 +200,7 @@ class GdalConan(ConanFile):
             self.requires("cfitsio/3.470")
         # if self.options.with_pcraster:
         #     self.requires("pcraster-rasterformat/x.x.x")
-        if self.options.with_png:
+        if self.options.get_safe("with_png", True):
             self.requires("libpng/1.6.37")
         # if self.options.with_dds:
         #     self.requires("crunch/x.x.x")
@@ -240,12 +244,12 @@ class GdalConan(ConanFile):
             self.requires("expat/2.2.9")
         if self.options.with_libkml:
             self.requires("libkml/1.3.0")
-        if self.options.with_odbc:
+        if self.options.with_odbc and self.settings.os != "Windows":
             self.requires("odbc/2.3.7")
         # if self.options.with_dods_root:
         #     self.requires("libdap/x.x.x")
         if self.options.with_curl:
-            self.requires("libcurl/7.69.1")
+            self.requires("libcurl/7.70.0")
         if self.options.with_xml2:
             self.requires("libxml2/2.9.10")
         # if self.options.with_spatialite:
@@ -295,6 +299,131 @@ class GdalConan(ConanFile):
         tools.get(**self.conan_data["sources"][self.version])
         os.rename(self.name + "-" + self.version, self._source_subfolder)
 
+    def _patch_sources(self):
+        for patch in self.conan_data.get("patches", {}).get(self.version, []):
+            tools.patch(**patch)
+        # Remove embedded dependencies
+        embedded_libs = [
+            os.path.join("frmts", "gif", "giflib"),
+            os.path.join("frmts", "jpeg", "libjpeg"),
+            os.path.join("frmts", "png", "libpng"),
+            os.path.join("frmts", "zlib"),
+            os.path.join("ogr", "ogrsf_frmts", "geojson", "libjson"),
+            # os.path.join("ogr", "ogrsf_frmts", "cad", "libopencad"), TODO: uncomment when libopencad available
+        ]
+        if tools.Version(self.version) >= "3.1.0":
+            embedded_libs.append(os.path.join("ogr", "ogrsf_frmts", "flatgeobuf", "flatbuffers"))
+        for lib_subdir in embedded_libs:
+            tools.rmdir(os.path.join(self._source_subfolder, "gdal", lib_subdir))
+
+    def _replace_in_nmake(self, str1, str2):
+        tools.replace_in_file(os.path.join(self.build_folder, self._source_subfolder, "gdal", "nmake.opt"), str1, str2, strict=False)
+
+    def _get_nmake_args(self):
+        if self._nmake_args:
+            return self._nmake_args
+
+        args = []
+        args.append("GDAL_HOME={}".format(self.package_folder))
+        args.append("WIN64=1")
+        args.append("DEBUG={}".format("1" if self.settings.build_type == "Debug" else "0"))
+        # SIMD Intrinsics
+        simd_intrinsics = str(self.options.get_safe("simd_intrinsics", False))
+        if simd_intrinsics != "avx":
+            self._replace_in_nmake("AVXFLAGS = /DHAVE_AVX_AT_COMPILE_TIME", "")
+        if simd_intrinsics not in ["sse3", "avx"]:
+            self._replace_in_nmake("SSSE3FLAGS = /DHAVE_SSSE3_AT_COMPILE_TIME", "")
+        if simd_intrinsics not in ["sse", "sse3", "avx"]:
+            self._replace_in_nmake("SSEFLAGS = /DHAVE_SSE_AT_COMPILE_TIME", "")
+        # Other settings
+        if self.options.without_pam:
+            self._replace_in_nmake("PAM_SETTING=-DPAM_ENABLED", "")
+        args.append("DLLBUILD={}".format("1" if self.options.shared else "0"))
+        if not self.options.with_gnm:
+            self._replace_in_nmake("INCLUDE_GNM_FRMTS = YES", "")
+        args.append("PROJ_INCLUDE=-I{}".format(os.path.join(self.deps_cpp_info["proj"].rootpath, "include")))
+        if not self.options.with_odbc:
+            self._replace_in_nmake("ODBC_SUPPORTED = 1", "")
+        args.append("JPEG_EXTERNAL_LIB=1")
+        if self.options.with_jpeg =="libjpeg":
+            args.append("JPEGDIR={}".format(" -I".join(self.deps_cpp_info["libjpeg"].include_paths)))
+        elif self.options.with_jpeg =="libjpeg-turbo":
+            args.append("JPEGDIR={}".format(" -I".join(self.deps_cpp_info["libjpeg-turbo"].include_paths)))
+        else:
+            self._replace_in_nmake("JPEG_SUPPORTED = 1", "")
+        self._replace_in_nmake("JPEG12_SUPPORTED = 1", "")
+        args.append("PNG_EXTERNAL_LIB=1")
+        args.append("PNGDIR={}".format(" -I".join(self.deps_cpp_info["libpng"].include_paths)))
+        if self.options.with_gif:
+            args.append("GIF_SETTING=EXTERNAL")
+        if self.options.with_pcraster:
+            args.append("PCRASTER_SETTING=INTERNAL")
+        args.append("TIFF_INC=-I{}".format(" -I".join(self.deps_cpp_info["libtiff"].include_paths)))
+        args.append("GEOTIFF_INC=-I{}".format(" -I".join(self.deps_cpp_info["libgeotiff"].include_paths)))
+        if self.options.with_libkml:
+            args.append("LIBKML_DIR={}".format(self.deps_cpp_info["libkml"].rootpath))
+            args.append("LIBKML_INCLUDE=-I{}".format(" -I".join(self.deps_cpp_info["libkml"].include_paths)))
+        if self.options.with_expat:
+            args.append("EXPAT_DIR={}".format(self.deps_cpp_info["expat"].rootpath))
+            args.append("EXPAT_INCLUDE=-I{}".format(" -I".join(self.deps_cpp_info["expat"].include_paths)))
+        if self.options.with_xerces:
+            args.append("XERCES_DIR={}".format(self.deps_cpp_info["xerces-c"].rootpath))
+            args.append("XERCES_INCLUDE=-I{}".format(" -I".join(self.deps_cpp_info["xerces-c"].include_paths)))
+        if self.options.with_jasper:
+            args.append("JASPER_DIR={}".format(self.deps_cpp_info["jasper"].rootpath))
+            args.append("JASPER_INCLUDE=-I{}".format(" -I".join(self.deps_cpp_info["jasper"].include_paths)))
+        if self.options.with_hdf4:
+            args.append("HDF4_DIR={}".format(self.deps_cpp_info["hdf4"].rootpath))
+            args.append("HDF4_INCLUDE={}".format(" -I".join(self.deps_cpp_info["hdf4"].include_paths)))
+            args.append("HDF4_HAS_MAXOPENFILES=YES")
+        if self.options.with_hdf5:
+            args.append("HDF5_DIR={}".format(self.deps_cpp_info["hdf5"].rootpath))
+        if not self.options.with_pcidsk:
+            self._replace_in_nmake("PCIDSK_SETTING=INTERNAL", "")
+        if self.options.with_pg:
+            args.append("PG_INC_DIR={}".format(" -I".join(self.deps_cpp_info["hdf4"].include_paths)))
+        if self.options.with_mysql == "libmysqlclient":
+            args.append("MYSQL_INC_DIR={}".format(" -I".join(self.deps_cpp_info["libmysqlclient"].include_paths)))
+        if self.options.get_safe("with_sqlite3"):
+            args.append("SQLITE_INC=-I{}".format(" -I".join(self.deps_cpp_info["sqlite3"].include_paths)))
+            args.append("SQLITE_LIB=")
+        if self.options.get_safe("with_pcre"):
+            args.append("PCRE_INC=-I{}".format(" -I".join(self.deps_cpp_info["pcre"].include_paths)))
+        if self.options.with_cfitsio:
+            args.append("FITS_INC_DIR={}".format(" -I".join(self.deps_cpp_info["cfistio"].include_paths)))
+        if self.options.with_curl:
+            args.append("CURL_INC=-I{}".format(" -I".join(self.deps_cpp_info["libcurl"].include_paths)))
+        if self.options.with_geos:
+            args.append("GEOS_CFLAGS=-I{} -DHAVE GEOS".format(" -I".join(self.deps_cpp_info["geos"].include_paths)))
+        if self.options.with_openjpeg:
+            args.append("OPENJPEG_ENABLED=YES")
+        if self.options.with_zlib:
+            args.append("ZLIB_EXTERNAL_LIB=1")
+            args.append("ZLIB_INC=-I{}".format(" -I".join(self.deps_cpp_info["zlib"].include_paths)))
+        if self.options.get_safe("with_zstd"):
+            args.append("ZSTD_CFLAGS=-I{}".format(" -I".join(self.deps_cpp_info["zstd"].include_paths)))
+        if self.options.with_webp:
+            args.append("WEBP_ENABLED=YES")
+            args.append("WEBP_CFLAGS=-I{}".format(" -I".join(self.deps_cpp_info["libwebp"].include_paths)))
+        if self.options.with_xml2:
+            args.append("LIBXML2_INC=-I{}".format(" -I".join(self.deps_cpp_info["libxml2"].include_paths)))
+        if self.options.with_gta:
+            args.append("GTA_CFLAGS=-I{}".format(" -I".join(self.deps_cpp_info["libgta"].include_paths)))
+        args.append("QHULL_SETTING={}".format("INTERNAL" if self.options.with_qhull else "NO"))
+        if self.options.with_crypto:
+            args.append("OPENSSL_INC=-I{}".format(" -I".join(self.deps_cpp_info["openssl"].include_paths)))
+        if not (self.options.with_zlib and self.options.get_safe("with_png", True) and bool(self.options.with_jpeg)):
+            self._replace_in_nmake("MRF_SETTING=yes", "")
+        if self.options.without_lerc:
+            args.append("HAVE_LERC=0")
+        if self.options.with_charls:
+            args.append("CHARLS_INC=-I{}".format(" -I".join(self.deps_cpp_info["charls"].include_paths)))
+            args.append("CHARLS_LIB=")
+            args.append("CHARLS_FLAGS=-DCHARLS_2_1")
+
+        self._nmake_args = args
+        return self._nmake_args
+
     def _configure_autotools(self):
         if self._autotools:
             return self._autotools
@@ -342,7 +471,7 @@ class GdalConan(ConanFile):
         args.append("--with-liblzma=no") # always disabled: liblzma is an optional transitive dependency of gdal (through libtiff).
         args.append("--with-zstd={}".format("yes" if self.options.get_safe("with_zstd") else "no")) # Optional direct dependency of gdal only if lerc lib enabled
         # Drivers:
-        if not (self.options.with_zlib and self.options.with_png and self.options.with_jpeg is not None):
+        if not (self.options.with_zlib and self.options.with_png and bool(self.options.with_jpeg)):
             args.append("--disable-driver-mrf") # MRF raster driver always depends on zlib, libpng and libjpeg: https://github.com/OSGeo/gdal/issues/2581
         args.append("--with-pg={}".format("yes" if self.options.with_pg else "no"))
         args.extend(["--without-grass", "--without-libgrass"]) # TODO: to implement when libgrass lib available
@@ -381,7 +510,7 @@ class GdalConan(ConanFile):
         args.append("--without-msg") # commercial library
         args.append("--without-oci") # TODO
         args.append("--with-gnm={}".format("yes" if self.options.with_gnm else "no"))
-        args.append("--with-mysql={}".format("yes" if self.options.with_mysql else "no"))
+        args.append("--with-mysql={}".format("yes" if bool(self.options.with_mysql) else "no"))
         args.append("--without-ingres") # commercial library
         args.append("--with-xerces={}".format(tools.unix_path(self.deps_cpp_info["xerces-c"].rootpath) if self.options.with_xerces else "no"))
         args.append("--with-expat={}".format(tools.unix_path(self.deps_cpp_info["expat"].rootpath) if self.options.with_expat else "no"))
@@ -435,37 +564,33 @@ class GdalConan(ConanFile):
 
     def build(self):
         self._patch_sources()
-        autotools = self._configure_autotools()
-        with tools.chdir(os.path.join(self._source_subfolder, "gdal")):
-            autotools.make()
-
-    def _patch_sources(self):
-        for patch in self.conan_data.get("patches", {}).get(self.version, []):
-            tools.patch(**patch)
-        # Remove embedded dependencies
-        embedded_libs = [
-            os.path.join("frmts", "gif", "giflib"),
-            os.path.join("frmts", "jpeg", "libjpeg"),
-            os.path.join("frmts", "png", "libpng"),
-            os.path.join("frmts", "zlib"),
-            os.path.join("ogr", "ogrsf_frmts", "geojson", "libjson"),
-            # os.path.join("ogr", "ogrsf_frmts", "cad", "libopencad"), TODO: uncomment when libopencad available
-        ]
-        if tools.Version(self.version) >= "3.1.0":
-            embedded_libs.append(os.path.join("ogr", "ogrsf_frmts", "flatgeobuf", "flatbuffers"))
-        for lib_subdir in embedded_libs:
-            tools.rmdir(os.path.join(self._source_subfolder, "gdal", lib_subdir))
+        if self.settings.compiler == "Visual Studio":
+            with tools.chdir(os.path.join(self._source_subfolder, "gdal")):
+                with tools.vcvars(self.settings):
+                    with tools.environment_append(VisualStudioBuildEnvironment(self).vars):
+                        self.run("nmake -f makefile.vc {}".format(" ".join(self._get_nmake_args())))
+        else:
+            autotools = self._configure_autotools()
+            with tools.chdir(os.path.join(self._source_subfolder, "gdal")):
+                autotools.make()
 
     def package(self):
         self.copy("LICENSE.TXT", dst="licenses", src=os.path.join(self._source_subfolder, "gdal"))
-        autotools = self._configure_autotools()
-        with tools.chdir(os.path.join(self._source_subfolder, "gdal")):
-            autotools.install()
-        tools.rmdir(os.path.join(self.package_folder, "share"))
-        tools.rmdir(os.path.join(self.package_folder, "lib", "gdalplugins"))
-        tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
-        for la_file in glob.glob(os.path.join(self.package_folder, "lib", "*.la")):
-            os.remove(la_file)
+        if self.settings.compiler == "Visual Studio":
+            with tools.chdir(os.path.join(self._source_subfolder, "gdal")):
+                with tools.vcvars(self.settings):
+                    with tools.environment_append(VisualStudioBuildEnvironment(self).vars):
+                        self.run("nmake -f makefile.vc devinstall {}".format(" ".join(self._get_nmake_args())))
+            tools.rmdir(os.path.join(self.package_folder, "data"))
+        else:
+            autotools = self._configure_autotools()
+            with tools.chdir(os.path.join(self._source_subfolder, "gdal")):
+                autotools.install()
+            tools.rmdir(os.path.join(self.package_folder, "share"))
+            tools.rmdir(os.path.join(self.package_folder, "lib", "gdalplugins"))
+            tools.rmdir(os.path.join(self.package_folder, "lib", "pkgconfig"))
+            for la_file in glob.glob(os.path.join(self.package_folder, "lib", "*.la")):
+                os.remove(la_file)
 
     def package_info(self):
         self.cpp_info.names["cmake_find_package"] = "GDAL"
@@ -478,6 +603,11 @@ class GdalConan(ConanFile):
             self.cpp_info.system_libs.extend(["psapi", "ws2_32"])
         if not self.options.shared and self._stdcpp_library:
             self.cpp_info.system_libs.append(self._stdcpp_library)
+        if self.settings.compiler == "Visual Studio":
+            self.cpp_info.defines.append("CPL_DISABLE_DLL")
+        bin_path = os.path.join(self.package_folder, "bin")
+        self.output.info("Appending PATH environment variable: {}".format(bin_path))
+        self.env_info.PATH.append(bin_path)
 
     @property
     def _stdcpp_library(self):
