@@ -2,6 +2,7 @@ import glob
 import os
 
 from conans import ConanFile, AutoToolsBuildEnvironment, VisualStudioBuildEnvironment, tools
+from conans.errors import ConanInvalidConfiguration
 
 class GdalConan(ConanFile):
     name = "gdal"
@@ -173,6 +174,8 @@ class GdalConan(ConanFile):
             del self.options.with_null
             del self.options.with_zlib # zlib and png are always used in nmake build,
             del self.options.with_png  # and it's not trivial to fix
+        if self.settings.os == "Windows" and self.options.with_obdc:
+            raise ConanInvalidConfiguration("gdal with odbc on Windows is not yet supported in this recipe")
 
     def build_requirements(self):
         if self.settings.os == "Windows" and self.settings.compiler != "Visual Studio" and \
