@@ -169,6 +169,8 @@ class GdalConan(ConanFile):
         if tools.Version(self.version) < "3.1.0":
             del self.options.with_exr
         if self.settings.compiler == "Visual Studio":
+            del self.options.threadsafe
+            del self.options.with_zlib
             del self.options.with_png
             del self.options.with_null
 
@@ -188,7 +190,7 @@ class GdalConan(ConanFile):
         self.requires("proj/6.3.1")
         if tools.Version(self.version) >= "3.1.0":
             self.requires("flatbuffers/1.12.0")
-        if self.options.with_zlib:
+        if self.options.get_safe("with_zlib", True):
             self.requires("zlib/1.2.11")
         if self.options.get_safe("with_zstd"):
             self.requires("zstd/1.4.4")
@@ -324,7 +326,7 @@ class GdalConan(ConanFile):
             return self._nmake_args
 
         args = []
-        args.append("GDAL_HOME={}".format(self.package_folder))
+        args.append("GDAL_HOME=\"{}\"".format(self.package_folder))
         args.append("WIN64=1")
         args.append("DEBUG={}".format("1" if self.settings.build_type == "Debug" else "0"))
         # SIMD Intrinsics
@@ -341,85 +343,86 @@ class GdalConan(ConanFile):
         args.append("DLLBUILD={}".format("1" if self.options.shared else "0"))
         if not self.options.with_gnm:
             self._replace_in_nmake("INCLUDE_GNM_FRMTS = YES", "")
-        args.append("PROJ_INCLUDE=-I{}".format(os.path.join(self.deps_cpp_info["proj"].rootpath, "include")))
+        args.append("PROJ_INCLUDE=\"-I{}\"".format(" -I".join(self.deps_cpp_info["proj"].include_paths)))
         if not self.options.with_odbc:
             self._replace_in_nmake("ODBC_SUPPORTED = 1", "")
         args.append("JPEG_EXTERNAL_LIB=1")
         if self.options.with_jpeg =="libjpeg":
-            args.append("JPEGDIR={}".format(" -I".join(self.deps_cpp_info["libjpeg"].include_paths)))
+            args.append("JPEGDIR=\"{}\"".format(" -I".join(self.deps_cpp_info["libjpeg"].include_paths)))
         elif self.options.with_jpeg =="libjpeg-turbo":
-            args.append("JPEGDIR={}".format(" -I".join(self.deps_cpp_info["libjpeg-turbo"].include_paths)))
+            args.append("JPEGDIR=\"{}\"".format(" -I".join(self.deps_cpp_info["libjpeg-turbo"].include_paths)))
         else:
             self._replace_in_nmake("JPEG_SUPPORTED = 1", "")
         self._replace_in_nmake("JPEG12_SUPPORTED = 1", "")
         args.append("PNG_EXTERNAL_LIB=1")
-        args.append("PNGDIR={}".format(" -I".join(self.deps_cpp_info["libpng"].include_paths)))
+        args.append("PNGDIR=\"{}\"".format(" -I".join(self.deps_cpp_info["libpng"].include_paths)))
         if self.options.with_gif:
             args.append("GIF_SETTING=EXTERNAL")
         if self.options.with_pcraster:
             args.append("PCRASTER_SETTING=INTERNAL")
-        args.append("TIFF_INC=-I{}".format(" -I".join(self.deps_cpp_info["libtiff"].include_paths)))
-        args.append("GEOTIFF_INC=-I{}".format(" -I".join(self.deps_cpp_info["libgeotiff"].include_paths)))
+        args.append("TIFF_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["libtiff"].include_paths)))
+        args.append("GEOTIFF_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["libgeotiff"].include_paths)))
         if self.options.with_libkml:
-            args.append("LIBKML_DIR={}".format(self.deps_cpp_info["libkml"].rootpath))
-            args.append("LIBKML_INCLUDE=-I{}".format(" -I".join(self.deps_cpp_info["libkml"].include_paths)))
+            args.append("LIBKML_DIR=\"{}\"".format(self.deps_cpp_info["libkml"].rootpath))
         if self.options.with_expat:
-            args.append("EXPAT_DIR={}".format(self.deps_cpp_info["expat"].rootpath))
-            args.append("EXPAT_INCLUDE=-I{}".format(" -I".join(self.deps_cpp_info["expat"].include_paths)))
+            args.append("EXPAT_DIR=\"{}\"".format(self.deps_cpp_info["expat"].rootpath))
+            args.append("EXPAT_INCLUDE=\"-I{}\"".format(" -I".join(self.deps_cpp_info["expat"].include_paths)))
         if self.options.with_xerces:
-            args.append("XERCES_DIR={}".format(self.deps_cpp_info["xerces-c"].rootpath))
-            args.append("XERCES_INCLUDE=-I{}".format(" -I".join(self.deps_cpp_info["xerces-c"].include_paths)))
+            args.append("XERCES_DIR=\"{}\"".format(self.deps_cpp_info["xerces-c"].rootpath))
+            args.append("XERCES_INCLUDE=\"-I{}\"".format(" -I".join(self.deps_cpp_info["xerces-c"].include_paths)))
         if self.options.with_jasper:
-            args.append("JASPER_DIR={}".format(self.deps_cpp_info["jasper"].rootpath))
-            args.append("JASPER_INCLUDE=-I{}".format(" -I".join(self.deps_cpp_info["jasper"].include_paths)))
+            args.append("JASPER_DIR=\"{}\"".format(self.deps_cpp_info["jasper"].rootpath))
         if self.options.with_hdf4:
-            args.append("HDF4_DIR={}".format(self.deps_cpp_info["hdf4"].rootpath))
-            args.append("HDF4_INCLUDE={}".format(" -I".join(self.deps_cpp_info["hdf4"].include_paths)))
+            args.append("HDF4_DIR=\"{}\"".format(self.deps_cpp_info["hdf4"].rootpath))
+            args.append("HDF4_INCLUDE=\"{}\"".format(" -I".join(self.deps_cpp_info["hdf4"].include_paths)))
             args.append("HDF4_HAS_MAXOPENFILES=YES")
         if self.options.with_hdf5:
-            args.append("HDF5_DIR={}".format(self.deps_cpp_info["hdf5"].rootpath))
+            args.append("HDF5_DIR=\"{}\"".format(self.deps_cpp_info["hdf5"].rootpath))
         if not self.options.with_pcidsk:
             self._replace_in_nmake("PCIDSK_SETTING=INTERNAL", "")
         if self.options.with_pg:
-            args.append("PG_INC_DIR={}".format(" -I".join(self.deps_cpp_info["hdf4"].include_paths)))
+            args.append("PG_INC_DIR=\"{}\"".format(" -I".join(self.deps_cpp_info["hdf4"].include_paths)))
+            self._replace_in_nmake("#PG_LIB = n:\\pkg\\libpq_win32\\lib\\libpqdll.lib wsock32.lib", "PG_LIB=")
         if self.options.with_mysql == "libmysqlclient":
-            args.append("MYSQL_INC_DIR={}".format(" -I".join(self.deps_cpp_info["libmysqlclient"].include_paths)))
+            args.append("MYSQL_INC_DIR=\"{}\"".format(" -I".join(self.deps_cpp_info["libmysqlclient"].include_paths)))
+            self._replace_in_nmake("#MYSQL_LIB = D:\\Software\\MySQLServer4.1\\lib\\opt\\libmysql.lib advapi32.lib", "MYSQL_LIB=")
         if self.options.get_safe("with_sqlite3"):
-            args.append("SQLITE_INC=-I{}".format(" -I".join(self.deps_cpp_info["sqlite3"].include_paths)))
-            args.append("SQLITE_LIB=")
+            args.append("SQLITE_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["sqlite3"].include_paths)))
+            self._replace_in_nmake("#SQLITE_LIB=N:\\pkg\\sqlite-win32\\sqlite3_i.lib", "SQLITE_LIB=")
         if self.options.get_safe("with_pcre"):
-            args.append("PCRE_INC=-I{}".format(" -I".join(self.deps_cpp_info["pcre"].include_paths)))
+            args.append("PCRE_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["pcre"].include_paths)))
         if self.options.with_cfitsio:
-            args.append("FITS_INC_DIR={}".format(" -I".join(self.deps_cpp_info["cfistio"].include_paths)))
+            args.append("FITS_INC_DIR=\"{}\"".format(" -I".join(self.deps_cpp_info["cfitsio"].include_paths)))
         if self.options.with_curl:
-            args.append("CURL_INC=-I{}".format(" -I".join(self.deps_cpp_info["libcurl"].include_paths)))
+            args.append("CURL_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["libcurl"].include_paths)))
         if self.options.with_geos:
-            args.append("GEOS_CFLAGS=-I{} -DHAVE GEOS".format(" -I".join(self.deps_cpp_info["geos"].include_paths)))
+            args.append("GEOS_CFLAGS=\"-I{} -DHAVE_GEOS\"".format(" -I".join(self.deps_cpp_info["geos"].include_paths)))
         if self.options.with_openjpeg:
             args.append("OPENJPEG_ENABLED=YES")
-        if self.options.with_zlib:
+        if self.options.get_safe("with_zlib", True):
             args.append("ZLIB_EXTERNAL_LIB=1")
-            args.append("ZLIB_INC=-I{}".format(" -I".join(self.deps_cpp_info["zlib"].include_paths)))
+            args.append("ZLIB_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["zlib"].include_paths)))
         if self.options.get_safe("with_zstd"):
-            args.append("ZSTD_CFLAGS=-I{}".format(" -I".join(self.deps_cpp_info["zstd"].include_paths)))
+            args.append("ZSTD_CFLAGS=\"-I{}\"".format(" -I".join(self.deps_cpp_info["zstd"].include_paths)))
         if self.options.with_webp:
             args.append("WEBP_ENABLED=YES")
-            args.append("WEBP_CFLAGS=-I{}".format(" -I".join(self.deps_cpp_info["libwebp"].include_paths)))
+            args.append("WEBP_CFLAGS=\"-I{}\"".format(" -I".join(self.deps_cpp_info["libwebp"].include_paths)))
         if self.options.with_xml2:
-            args.append("LIBXML2_INC=-I{}".format(" -I".join(self.deps_cpp_info["libxml2"].include_paths)))
+            args.append("LIBXML2_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["libxml2"].include_paths)))
         if self.options.with_gta:
-            args.append("GTA_CFLAGS=-I{}".format(" -I".join(self.deps_cpp_info["libgta"].include_paths)))
+            args.append("GTA_CFLAGS=\"-I{}\"".format(" -I".join(self.deps_cpp_info["libgta"].include_paths)))
         args.append("QHULL_SETTING={}".format("INTERNAL" if self.options.with_qhull else "NO"))
         if self.options.with_crypto:
-            args.append("OPENSSL_INC=-I{}".format(" -I".join(self.deps_cpp_info["openssl"].include_paths)))
-        if not (self.options.with_zlib and self.options.get_safe("with_png", True) and bool(self.options.with_jpeg)):
+            args.append("OPENSSL_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["openssl"].include_paths)))
+        if not (self.options.get_safe("with_zlib", True) and self.options.get_safe("with_png", True) and bool(self.options.with_jpeg)):
             self._replace_in_nmake("MRF_SETTING=yes", "")
         if self.options.without_lerc:
             args.append("HAVE_LERC=0")
         if self.options.with_charls:
-            args.append("CHARLS_INC=-I{}".format(" -I".join(self.deps_cpp_info["charls"].include_paths)))
-            args.append("CHARLS_LIB=")
+            self._replace_in_nmake("#CHARLS_LIB=e:\\work\\GIS\gdal\\supportlibs\\charls\\bin\\Release\\x86\\CharLS.lib", "CHARLS_LIB=")
             args.append("CHARLS_FLAGS=-DCHARLS_2_1")
+        if self.options.get_safe("with_exr"):
+            args.append("EXR_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["openexr"].include_paths)))
 
         self._nmake_args = args
         return self._nmake_args
@@ -472,7 +475,11 @@ class GdalConan(ConanFile):
         args.append("--with-zstd={}".format("yes" if self.options.get_safe("with_zstd") else "no")) # Optional direct dependency of gdal only if lerc lib enabled
         # Drivers:
         if not (self.options.with_zlib and self.options.with_png and bool(self.options.with_jpeg)):
-            args.append("--disable-driver-mrf") # MRF raster driver always depends on zlib, libpng and libjpeg: https://github.com/OSGeo/gdal/issues/2581
+            # MRF raster driver always depends on zlib, libpng and libjpeg: https://github.com/OSGeo/gdal/issues/2581
+            if tools.Version(self.version) < "3.0.0":
+                args.append("--without-mrf")
+            else:
+                args.append("--disable-driver-mrf")
         args.append("--with-pg={}".format("yes" if self.options.with_pg else "no"))
         args.extend(["--without-grass", "--without-libgrass"]) # TODO: to implement when libgrass lib available
         args.append("--with-cfitsio={}".format(tools.unix_path(self.deps_cpp_info["cfitsio"].rootpath) if self.options.with_cfitsio else "no"))
@@ -603,8 +610,8 @@ class GdalConan(ConanFile):
             self.cpp_info.system_libs.extend(["psapi", "ws2_32"])
         if not self.options.shared and self._stdcpp_library:
             self.cpp_info.system_libs.append(self._stdcpp_library)
-        if self.settings.compiler == "Visual Studio":
-            self.cpp_info.defines.append("CPL_DISABLE_DLL")
+        if self.settings.compiler == "Visual Studio" and self.options.shared:
+            self.cpp_info.defines.append("CPL_DISABLE_DLL") # yes, it's weird, but otherwise consumers would have lot of dllexport
         bin_path = os.path.join(self.package_folder, "bin")
         self.output.info("Appending PATH environment variable: {}".format(bin_path))
         self.env_info.PATH.append(bin_path)

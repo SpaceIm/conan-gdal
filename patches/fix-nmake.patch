@@ -51,7 +51,7 @@
  		-DFRMT_leveller -DFRMT_sgi -DFRMT_srtmhgt -DFRMT_idrisi \
  		-DFRMT_jaxapalsar -DFRMT_ers -DFRMT_ingr -DFRMT_dimap \
  		-DFRMT_gff -DFRMT_terragen -DFRMT_gsg -DFRMT_cosar -DFRMT_pds \
-@@ -32,6 +32,18 @@ PLUGINDIRLIST 	=	$(PLUGINFLAGS:-DFRMT_=)
+@@ -32,6 +32,22 @@ PLUGINDIRLIST 	=	$(PLUGINFLAGS:-DFRMT_=)
  EXTRAFLAGS	=	$(EXTRAFLAGS) -DFRMT_postgisraster
  !ENDIF
  
@@ -65,6 +65,10 @@
 +
 +!IFDEF PCRASTER_SETTING
 +EXTRAFLAGS	=	$(EXTRAFLAGS) -DFRMT_pcraster
++!ENDIF
++
++!IFDEF EXR_INC
++EXTRAFLAGS	=	$(EXTRAFLAGS) -DFRMT_exr
 +!ENDIF
 +
  !IFDEF JPEG_SUPPORTED
