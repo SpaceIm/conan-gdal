@@ -174,7 +174,7 @@ class GdalConan(ConanFile):
             del self.options.with_null
             del self.options.with_zlib # zlib and png are always used in nmake build,
             del self.options.with_png  # and it's not trivial to fix
-        if self.settings.os == "Windows" and self.options.with_obdc:
+        if self.settings.os == "Windows" and self.options.with_odbc:
             raise ConanInvalidConfiguration("gdal with odbc on Windows is not yet supported in this recipe")
 
     def build_requirements(self):
