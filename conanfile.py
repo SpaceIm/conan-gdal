@@ -170,9 +170,9 @@ class GdalConan(ConanFile):
             del self.options.with_exr
         if self.settings.compiler == "Visual Studio":
             del self.options.threadsafe
-            del self.options.with_zlib
-            del self.options.with_png
             del self.options.with_null
+            del self.options.with_zlib # zlib and png are always used in nmake build,
+            del self.options.with_png  # and it's not trivial to fix
 
     def build_requirements(self):
         if self.settings.os == "Windows" and self.settings.compiler != "Visual Studio" and \
@@ -327,7 +327,8 @@ class GdalConan(ConanFile):
 
         args = []
         args.append("GDAL_HOME=\"{}\"".format(self.package_folder))
-        args.append("WIN64=1")
+        if self.settings.arch == "x86_64":
+            args.append("WIN64=1")
         args.append("DEBUG={}".format("1" if self.settings.build_type == "Debug" else "0"))
         # SIMD Intrinsics
         simd_intrinsics = str(self.options.get_safe("simd_intrinsics", False))
@@ -395,6 +396,7 @@ class GdalConan(ConanFile):
             args.append("FITS_INC_DIR=\"{}\"".format(" -I".join(self.deps_cpp_info["cfitsio"].include_paths)))
         if self.options.with_curl:
             args.append("CURL_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["libcurl"].include_paths)))
+            self._replace_in_nmake("#CURL_LIB = $(CURL_DIR)/libcurl.lib wsock32.lib wldap32.lib winmm.lib", "CURL_LIB=")
         if self.options.with_geos:
             args.append("GEOS_CFLAGS=\"-I{} -DHAVE_GEOS\"".format(" -I".join(self.deps_cpp_info["geos"].include_paths)))
         if self.options.with_openjpeg:
