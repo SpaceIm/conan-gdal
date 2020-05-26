@@ -611,6 +611,8 @@ class GdalConan(ConanFile):
                     with tools.environment_append(VisualStudioBuildEnvironment(self).vars):
                         self.run("nmake -f makefile.vc devinstall {}".format(" ".join(self._get_nmake_args())))
             tools.rmdir(os.path.join(self.package_folder, "data"))
+            for pdb_file in glob.glob(os.path.join(self.package_folder, "lib", "*.pdb")):
+                os.remove(pdb_file)
         else:
             autotools = self._configure_autotools()
             with tools.chdir(os.path.join(self._source_subfolder, "gdal")):
