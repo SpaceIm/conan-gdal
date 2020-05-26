@@ -356,6 +356,7 @@ class GdalConan(ConanFile):
         args.append("PROJ_INCLUDE=\"-I{}\"".format(" -I".join(self.deps_cpp_info["proj"].include_paths)))
         if self.options.with_libiconv:
             args.append("LIBICONV_INCLUDE=\"-I{}\"".format(" -I".join(self.deps_cpp_info["libiconv"].include_paths)))
+            args.append("LIBICONV_CFLAGS=\"-DICONV_CONST=\"")
         if not self.options.with_odbc:
             self._replace_in_nmake("ODBC_SUPPORTED = 1", "")
         args.append("JPEG_EXTERNAL_LIB=1")
