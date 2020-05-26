@@ -394,7 +394,7 @@ class GdalConan(ConanFile):
         if not self.options.with_pcidsk:
             self._replace_in_nmake("PCIDSK_SETTING=INTERNAL", "")
         if self.options.with_pg:
-            args.append("PG_INC_DIR=\"{}\"".format(" -I".join(self.deps_cpp_info["hdf4"].include_paths)))
+            args.append("PG_INC_DIR=\"{}\"".format(" -I".join(self.deps_cpp_info["libpq"].include_paths)))
             self._replace_in_nmake("#PG_LIB = n:\\pkg\\libpq_win32\\lib\\libpqdll.lib wsock32.lib", "PG_LIB=")
         if self.options.with_mysql == "libmysqlclient":
             args.append("MYSQL_INC_DIR=\"{}\"".format(" -I".join(self.deps_cpp_info["libmysqlclient"].include_paths)))
