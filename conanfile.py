@@ -437,6 +437,8 @@ class GdalConan(ConanFile):
             args.append("CHARLS_FLAGS=-DCHARLS_2_1")
         if self.options.get_safe("with_exr"):
             args.append("EXR_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["openexr"].include_paths)))
+        # Inject required systems libs of dependencies
+        self._replace_in_nmake("ADD_LIBS	= ", "ADD_LIBS={}".format(" ".join([lib + ".lib" for lib in self.deps_cpp_info.system_libs])))
 
         self._nmake_args = args
         return self._nmake_args
