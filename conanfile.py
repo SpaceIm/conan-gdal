@@ -615,7 +615,9 @@ class GdalConan(ConanFile):
         self.cpp_info.names["pkg_config"] = "gdal"
         self.cpp_info.libs = tools.collect_libs(self)
         if self.settings.os == "Linux":
-            self.cpp_info.system_libs.extend(["m", "pthread"])
+            self.cpp_info.system_libs.extend(["dl", "m"])
+            if self.options.threadsafe:
+                self.cpp_info.system_libs.append("pthread")
         elif self.settings.os == "Windows":
             self.cpp_info.system_libs.extend(["psapi", "ws2_32"])
         if not self.options.shared and self._stdcpp_library:
