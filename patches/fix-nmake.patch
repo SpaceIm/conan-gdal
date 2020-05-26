@@ -1,3 +1,14 @@
+--- a/gdal/alg/makefile.vc
++++ b/gdal/alg/makefile.vc
+@@ -14,7 +14,7 @@ EXTRAFLAGS =	-I../frmts/vrt -I../ogr/ogrsf_frmts $(GEOS_CFLAGS) $(PROJ_FLAGS) $(
+ EXTRAFLAGS = $(EXTRAFLAGS) -DINTERNAL_QHULL
+ !ELSE
+ !IF "$(QHULL_SETTING)" == "EXTERNAL"
+-EXTRAFLAGS = $(EXTRAFLAGS) -DEXTERNAL_QHULL $(QHULL_INC)
++EXTRAFLAGS = $(EXTRAFLAGS) -DEXTERNAL_QHULL -DQHULL_INCLUDE_SUBDIR_IS_LIBQHULL=1 $(QHULL_INC)
+ !ENDIF
+ !ENDIF
+ !ENDIF
 --- a/gdal/frmts/gif/makefile.vc
 +++ b/gdal/frmts/gif/makefile.vc
 @@ -10,14 +10,8 @@ EXTRAFLAGS = 	-Igiflib
