@@ -119,7 +119,7 @@ class GdalConan(ConanFile):
         "with_pcre": False,
         # "with_epsilon": False,
         "with_webp": False,
-        "with_geos": False,
+        "with_geos": True,
         # "with_sfcgal": False,
         "with_qhull": True,
         # "with_opencl": False,
