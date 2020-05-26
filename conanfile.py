@@ -21,6 +21,7 @@ class GdalConan(ConanFile):
         "simd_intrinsics": [None, "sse", "ssse3", "avx"],
         "threadsafe": [True, False],
         "with_zlib": [True, False],
+        "with_libiconv": [True, False],
         "with_zstd": [True, False],
         "with_pg": [True, False],
         # "with_libgrass": [True, False],
@@ -82,6 +83,7 @@ class GdalConan(ConanFile):
         "simd_intrinsics": "sse",
         "threadsafe": True,
         "with_zlib": True,
+        "with_libiconv": True,
         "with_zstd": False,
         "with_pg": False,
         # "with_libgrass": False,
@@ -174,6 +176,8 @@ class GdalConan(ConanFile):
             del self.options.with_null
             del self.options.with_zlib # zlib and png are always used in nmake build,
             del self.options.with_png  # and it's not trivial to fix
+        else:
+            del self.options.with_libiconv
         if self.settings.os == "Windows" and self.options.with_odbc:
             raise ConanInvalidConfiguration("gdal with odbc on Windows is not yet supported in this recipe")
 
@@ -194,6 +198,8 @@ class GdalConan(ConanFile):
             self.requires("flatbuffers/1.12.0")
         if self.options.get_safe("with_zlib", True):
             self.requires("zlib/1.2.11")
+        if self.options.get_safe("with_libiconv", True):
+            self.requires("libiconv/1.16")
         if self.options.get_safe("with_zstd"):
             self.requires("zstd/1.4.4")
         if self.options.with_pg:
@@ -348,6 +354,8 @@ class GdalConan(ConanFile):
         if not self.options.with_gnm:
             self._replace_in_nmake("INCLUDE_GNM_FRMTS = YES", "")
         args.append("PROJ_INCLUDE=\"-I{}\"".format(" -I".join(self.deps_cpp_info["proj"].include_paths)))
+        if self.options.with_libiconv:
+            args.append("LIBICONV_INCLUDE=\"-I{}\"".format(" -I".join(self.deps_cpp_info["libiconv"].include_paths)))
         if not self.options.with_odbc:
             self._replace_in_nmake("ODBC_SUPPORTED = 1", "")
         args.append("JPEG_EXTERNAL_LIB=1")
@@ -476,6 +484,7 @@ class GdalConan(ConanFile):
         # Depencencies:
         args.append("--with-proj=yes") # always required !
         args.append("--with-libz={}".format("yes" if self.options.with_zlib else "no"))
+        args.append("--with-libiconv-prefix={}".format(self._unix_path(self.deps_cpp_info["libiconv"].rootpath)))
         args.append("--with-liblzma=no") # always disabled: liblzma is an optional transitive dependency of gdal (through libtiff).
         args.append("--with-zstd={}".format("yes" if self.options.get_safe("with_zstd") else "no")) # Optional direct dependency of gdal only if lerc lib enabled
         # Drivers:
