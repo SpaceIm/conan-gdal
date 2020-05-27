@@ -313,6 +313,9 @@ class GdalConan(ConanFile):
     def _patch_sources(self):
         for patch in self.conan_data.get("patches", {}).get(self.version, []):
             tools.patch(**patch)
+        tools.replace_in_file(os.path.join(self.build_folder, self._source_subfolder, "apps", "GNUmakefile"),
+                              "LNK_FLAGS :=	$(LDFLAGS)",
+                              "LNK_FLAGS :=	$(LDFLAGS) $(CXXFLAGS)")
         # Remove embedded dependencies
         embedded_libs = [
             os.path.join("alg", "internal_libqhull"),
