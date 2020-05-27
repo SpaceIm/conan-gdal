@@ -1,3 +1,14 @@
+--- a/apps/GNUmakefile
++++ b/apps/GNUmakefile
+@@ -5,7 +5,7 @@
+ include ../GDALmake.opt
+ 
+ CPPFLAGS :=	-I$(GDAL_ROOT)/frmts/vrt $(CPPFLAGS) $(JSON_INCLUDE) $(PROJ_INCLUDE) -I$(GDAL_ROOT)/ogr/ogrsf_frmts/geojson -I$(GDAL_ROOT)/ogr/ogrsf_frmts/generic -g
+-LNK_FLAGS :=	$(LDFLAGS)
++LNK_FLAGS :=	$(LDFLAGS) $(CXXFLAGS) # for -stdlib
+ DEP_LIBS =	$(EXE_DEP_LIBS) $(XTRAOBJ)
+ 
+ BIN_LIST =	gdalinfo$(EXE) gdalserver$(EXE) gdal_translate$(EXE) \
 --- a/configure.ac
 +++ b/configure.ac
 @@ -1214,6 +1214,7 @@ dnl ---------------------------------------------------------------------------

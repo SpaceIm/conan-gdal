@@ -313,9 +313,6 @@ class GdalConan(ConanFile):
     def _patch_sources(self):
         for patch in self.conan_data.get("patches", {}).get(self.version, []):
             tools.patch(**patch)
-        tools.replace_in_file(os.path.join(self.build_folder, self._source_subfolder, "apps", "GNUmakefile"),
-                              "LNK_FLAGS :=	$(LDFLAGS)",
-                              "LNK_FLAGS :=	$(LDFLAGS) $(CXXFLAGS)")
         # Remove embedded dependencies
         embedded_libs = [
             os.path.join("alg", "internal_libqhull"),
@@ -454,12 +451,6 @@ class GdalConan(ConanFile):
         with tools.chdir(configure_dir):
             self.run("autoconf -i", win_bash=tools.os_info.is_windows)
         self._autotools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
-        with tools.environment_append(self._autotools.vars):
-            self.run("echo $LIBS")
-            self.run("echo $LDFLAGS")
-            self.run("echo $CFLAGS")
-            self.run("echo $CXXFLAGS")
-            self.run("echo $CPPFLAGS")
 
         args = []
         # Shared/Static
