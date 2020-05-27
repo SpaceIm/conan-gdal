@@ -1,5 +1,5 @@
---- a/gdal/alg/makefile.vc
-+++ b/gdal/alg/makefile.vc
+--- a/alg/makefile.vc
++++ b/alg/makefile.vc
 @@ -14,7 +14,7 @@ EXTRAFLAGS =	-I../frmts/vrt -I../ogr/ogrsf_frmts $(GEOS_CFLAGS) $(PROJ_FLAGS) $(
  EXTRAFLAGS = $(EXTRAFLAGS) -DINTERNAL_QHULL
  !ELSE
@@ -9,8 +9,8 @@
  !ENDIF
  !ENDIF
  !ENDIF
---- a/gdal/apps/makefile.vc
-+++ b/gdal/apps/makefile.vc
+--- a/apps/makefile.vc
++++ b/apps/makefile.vc
 @@ -34,182 +34,182 @@ OBJ = commonutils.obj gdalinfo_lib.obj gdal_translate_lib.obj gdalwarp_lib.obj o
  appslib: $(OBJ)
  
@@ -230,8 +230,8 @@
  		/link $(LINKER_FLAGS)
  	if exist $@.manifest mt -manifest $@.manifest -outputresource:$@;1
  
---- a/gdal/frmts/gif/makefile.vc
-+++ b/gdal/frmts/gif/makefile.vc
+--- a/frmts/gif/makefile.vc
++++ b/frmts/gif/makefile.vc
 @@ -10,14 +10,8 @@ EXTRAFLAGS = 	-Igiflib
  
  default:	$(OBJ)
@@ -247,8 +247,8 @@
 -	cd ..
  
  
---- a/gdal/frmts/jpeg/makefile.vc
-+++ b/gdal/frmts/jpeg/makefile.vc
+--- a/frmts/jpeg/makefile.vc
++++ b/frmts/jpeg/makefile.vc
 @@ -29,12 +29,16 @@ default:	$(EXTRA_DEP) $(OBJ)
  
  clean:
@@ -266,8 +266,8 @@
  
  libjpeg12src:
  	cd libjpeg12
---- a/gdal/frmts/makefile.vc
-+++ b/gdal/frmts/makefile.vc
+--- a/frmts/makefile.vc
++++ b/frmts/makefile.vc
 @@ -3,11 +3,11 @@ GDAL_ROOT = ..
  
  EXTRAFLAGS =	-DFRMT_ceos -DFRMT_aigrid -DFRMT_elas -DFRMT_hfa -DFRMT_gtiff\
@@ -306,8 +306,8 @@
  !IFDEF JPEG_SUPPORTED
  EXTRAFLAGS	=	-DFRMT_jpeg $(EXTRAFLAGS)
  !ENDIF
---- a/gdal/frmts/pcidsk/makefile.vc
-+++ b/gdal/frmts/pcidsk/makefile.vc
+--- a/frmts/pcidsk/makefile.vc
++++ b/frmts/pcidsk/makefile.vc
 @@ -14,7 +14,11 @@ OBJ		=	pcidskdataset2.obj ogrpcidsklayer.obj vsi_pcidsk_io.obj gdal_edb.obj
  !ENDIF
  
@@ -334,8 +334,8 @@
  
  .cpp.obj:	
  	$(CC) $(CFLAGS) $(PCIDSKFLAGS) $(JPEGFLAGS) /c $*.cpp /Fo$*.obj
---- a/gdal/makefile.vc
-+++ b/gdal/makefile.vc
+--- a/makefile.vc
++++ b/makefile.vc
 @@ -84,7 +84,7 @@ staticlib:	$(LIB_DEPENDS)
  	call <<clean_main_build_output.bat
  $(CLEAN_MAIN_BUILD_OUTPUT_CMDS)
@@ -345,8 +345,8 @@
  
  appslib-target:
  	cd apps
---- a/gdal/nmake.opt
-+++ b/gdal/nmake.opt
+--- a/nmake.opt
++++ b/nmake.opt
 @@ -148,9 +148,9 @@ CXX_PDB_FLAGS=
  
  !IFNDEF OPTFLAGS
@@ -359,8 +359,8 @@
  !ENDIF
  !ENDIF  # OPTFLAGS
  
---- a/gdal/ogr/ogrsf_frmts/geojson/makefile.vc
-+++ b/gdal/ogr/ogrsf_frmts/geojson/makefile.vc
+--- a/ogr/ogrsf_frmts/geojson/makefile.vc
++++ b/ogr/ogrsf_frmts/geojson/makefile.vc
 @@ -28,13 +28,7 @@ EXTRAFLAGS = -I. -I.. -I..\.. -Ilibjson
  OBJ	=	$(GEOJSON_OBJ)
  

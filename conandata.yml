@@ -1,7 +1,7 @@
 sources:
   "3.1.0":
-    url: "https://github.com/OSGeo/gdal/archive/v3.1.0.tar.gz"
-    sha256: "1a96c065ddc3401f03a56f0bb6ab12c3421664be351dc0e69558caa1f0feadf1"
+    url: "https://github.com/OSGeo/gdal/releases/download/v3.1.0/gdal-3.1.0.tar.gz"
+    sha256: "6793ddb2b1ca042494d938ac82c71d06b9125bbb00c9bb9414a7c5e3a707c639"
 patches:
   "3.1.0":
     - patch_file: "patches/fix-autotools.patch"

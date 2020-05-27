@@ -1,5 +1,5 @@
---- a/gdal/gcore/gdal_rat.cpp
-+++ b/gdal/gcore/gdal_rat.cpp
+--- a/gcore/gdal_rat.cpp
++++ b/gcore/gdal_rat.cpp
 @@ -50,7 +50,7 @@
  #pragma clang diagnostic ignored "-Wunknown-pragmas"
  #pragma clang diagnostic ignored "-Wdocumentation"
@@ -9,8 +9,8 @@
  #ifdef __clang__
  #pragma clang diagnostic pop
  #endif
---- a/gdal/ogr/ogrsf_frmts/geojson/ogresrijsonreader.cpp
-+++ b/gdal/ogr/ogrsf_frmts/geojson/ogresrijsonreader.cpp
+--- a/ogr/ogrsf_frmts/geojson/ogresrijsonreader.cpp
++++ b/ogr/ogrsf_frmts/geojson/ogresrijsonreader.cpp
 @@ -37,7 +37,7 @@
  
  #include "cpl_conv.h"
@@ -20,8 +20,8 @@
  // #include "json_object.h"
  // #include "json_tokener.h"
  #include "ogr_api.h"
---- a/gdal/ogr/ogrsf_frmts/geojson/ogrgeojsondatasource.cpp
-+++ b/gdal/ogr/ogrsf_frmts/geojson/ogrgeojsondatasource.cpp
+--- a/ogr/ogrsf_frmts/geojson/ogrgeojsondatasource.cpp
++++ b/ogr/ogrsf_frmts/geojson/ogrgeojsondatasource.cpp
 @@ -41,7 +41,7 @@
  #include "cpl_string.h"
  #include "cpl_vsi.h"
@@ -31,8 +31,8 @@
  // #include "json_object.h"
  #include "gdal_utils.h"
  #include "gdal.h"
---- a/gdal/ogr/ogrsf_frmts/geojson/ogrgeojsonlayer.cpp
-+++ b/gdal/ogr/ogrsf_frmts/geojson/ogrgeojsonlayer.cpp
+--- a/ogr/ogrsf_frmts/geojson/ogrgeojsonlayer.cpp
++++ b/ogr/ogrsf_frmts/geojson/ogrgeojsonlayer.cpp
 @@ -37,7 +37,7 @@
  #  endif
  #endif  // !DEBUG_VERBOSE
@@ -42,8 +42,8 @@
  
  #if !DEBUG_JSON
  #  ifdef __clang
---- a/gdal/ogr/ogrsf_frmts/geojson/ogrgeojsonreader.cpp
-+++ b/gdal/ogr/ogrsf_frmts/geojson/ogrgeojsonreader.cpp
+--- a/ogr/ogrsf_frmts/geojson/ogrgeojsonreader.cpp
++++ b/ogr/ogrsf_frmts/geojson/ogrgeojsonreader.cpp
 @@ -32,7 +32,7 @@
  #include "ogrgeojsonreader.h"
  #include "ogrgeojsonutils.h"
@@ -53,8 +53,8 @@
  
  #if (!defined(JSON_C_VERSION_NUM)) || (JSON_C_VERSION_NUM < JSON_C_VER_013)
  #include <json_object_private.h> // just for sizeof(struct json_object)
---- a/gdal/ogr/ogrsf_frmts/geojson/ogrgeojsonutils.cpp
-+++ b/gdal/ogr/ogrsf_frmts/geojson/ogrgeojsonutils.cpp
+--- a/ogr/ogrsf_frmts/geojson/ogrgeojsonutils.cpp
++++ b/ogr/ogrsf_frmts/geojson/ogrgeojsonutils.cpp
 @@ -31,7 +31,7 @@
  #include <cpl_port.h>
  #include <cpl_conv.h>
@@ -64,8 +64,8 @@
  
  #include <algorithm>
  #include <memory>
---- a/gdal/ogr/ogrsf_frmts/geojson/ogrgeojsonwriter.cpp
-+++ b/gdal/ogr/ogrsf_frmts/geojson/ogrgeojsonwriter.cpp
+--- a/ogr/ogrsf_frmts/geojson/ogrgeojsonwriter.cpp
++++ b/ogr/ogrsf_frmts/geojson/ogrgeojsonwriter.cpp
 @@ -33,13 +33,13 @@
  #include "ogrgeojsonutils.h"
  #include "ogr_geojson.h"
@@ -82,8 +82,8 @@
  #include <ogr_api.h>
  #include <ogr_p.h>
  
---- a/gdal/ogr/ogrsf_frmts/geojson/ogrtopojsonreader.cpp
-+++ b/gdal/ogr/ogrsf_frmts/geojson/ogrtopojsonreader.cpp
+--- a/ogr/ogrsf_frmts/geojson/ogrtopojsonreader.cpp
++++ b/ogr/ogrsf_frmts/geojson/ogrtopojsonreader.cpp
 @@ -29,7 +29,7 @@
  #include "ogrgeojsonreader.h"
  #include "ogrgeojsonutils.h"
@@ -92,9 +92,9 @@
 +#include <json-c/json.h>  // JSON-C
  #include <ogr_api.h>
  
- CPL_CVSID("$Id$")
---- a/gdal/port/cpl_json_header.h
-+++ b/gdal/port/cpl_json_header.h
+ CPL_CVSID("$Id: ogrtopojsonreader.cpp 3a7914cee018d5b65dc1639368edbd8faac2543d 2020-01-07 22:30:27 +0100 Even Rouault $")
+--- a/port/cpl_json_header.h
++++ b/port/cpl_json_header.h
 @@ -33,7 +33,7 @@
  #pragma GCC system_header
  #endif

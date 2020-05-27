@@ -325,10 +325,10 @@ class GdalConan(ConanFile):
         if tools.Version(self.version) >= "3.1.0":
             embedded_libs.append(os.path.join("ogr", "ogrsf_frmts", "flatgeobuf", "flatbuffers"))
         for lib_subdir in embedded_libs:
-            tools.rmdir(os.path.join(self._source_subfolder, "gdal", lib_subdir))
+            tools.rmdir(os.path.join(self._source_subfolder, lib_subdir))
 
     def _replace_in_nmake(self, str1, str2):
-        tools.replace_in_file(os.path.join(self.build_folder, self._source_subfolder, "gdal", "nmake.opt"), str1, str2, strict=False)
+        tools.replace_in_file(os.path.join(self.build_folder, self._source_subfolder, "nmake.opt"), str1, str2, strict=False)
 
     def _get_nmake_args(self):
         if self._nmake_args:
@@ -446,7 +446,7 @@ class GdalConan(ConanFile):
     def _configure_autotools(self):
         if self._autotools:
             return self._autotools
-        configure_dir=os.path.join(self._source_subfolder, "gdal")
+        configure_dir = self._source_subfolder
         with tools.chdir(configure_dir):
             self.run("autoconf -i", win_bash=tools.os_info.is_windows)
         self._autotools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
@@ -594,19 +594,19 @@ class GdalConan(ConanFile):
     def build(self):
         self._patch_sources()
         if self.settings.compiler == "Visual Studio":
-            with tools.chdir(os.path.join(self._source_subfolder, "gdal")):
+            with tools.chdir(self._source_subfolder):
                 with tools.vcvars(self.settings):
                     with tools.environment_append(VisualStudioBuildEnvironment(self).vars):
                         self.run("nmake -f makefile.vc {}".format(" ".join(self._get_nmake_args())))
         else:
             autotools = self._configure_autotools()
-            with tools.chdir(os.path.join(self._source_subfolder, "gdal")):
+            with tools.chdir(self._source_subfolder):
                 autotools.make()
 
     def package(self):
-        self.copy("LICENSE.TXT", dst="licenses", src=os.path.join(self._source_subfolder, "gdal"))
+        self.copy("LICENSE.TXT", dst="licenses", src=self._source_subfolder)
         if self.settings.compiler == "Visual Studio":
-            with tools.chdir(os.path.join(self._source_subfolder, "gdal")):
+            with tools.chdir(self._source_subfolder):
                 with tools.vcvars(self.settings):
                     with tools.environment_append(VisualStudioBuildEnvironment(self).vars):
                         self.run("nmake -f makefile.vc devinstall {}".format(" ".join(self._get_nmake_args())))
@@ -615,7 +615,7 @@ class GdalConan(ConanFile):
                 os.remove(pdb_file)
         else:
             autotools = self._configure_autotools()
-            with tools.chdir(os.path.join(self._source_subfolder, "gdal")):
+            with tools.chdir(self._source_subfolder):
                 autotools.install()
             tools.rmdir(os.path.join(self.package_folder, "share"))
             tools.rmdir(os.path.join(self.package_folder, "lib", "gdalplugins"))
