@@ -187,6 +187,7 @@ class GdalConan(ConanFile):
             self.build_requires("msys2/20190524")
         if self.settings.os == "Linux":
             self.build_requires("autoconf/2.69")
+            self.build_requires("libtool/2.4.6")
 
     def requirements(self):
         self.requires("json-c/0.13.1")
