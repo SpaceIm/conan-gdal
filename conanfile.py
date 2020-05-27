@@ -209,11 +209,11 @@ class GdalConan(ConanFile):
         if self.options.with_cfitsio:
             self.requires("cfitsio/3.470")
         # if self.options.with_pcraster:
-        #     self.requires("pcraster-rasterformat/x.x.x")
+        #     self.requires("pcraster-rasterformat/1.3.2")
         if self.options.get_safe("with_png", True):
             self.requires("libpng/1.6.37")
         # if self.options.with_dds:
-        #     self.requires("crunch/x.x.x")
+        #     self.requires("crunch/104")
         if self.options.with_gta:
             self.requires("libgta/1.2.1")
         # if self.options.with_pcidsk:
@@ -237,7 +237,7 @@ class GdalConan(ConanFile):
         if self.options.with_hdf5:
             self.requires("hdf5/1.12.0")
         # if self.options.with_netcdf:
-        #     self.requires("netcdf-c/x.x.x")
+        #     self.requires("netcdf-c/4.7.4")
         if self.options.with_jasper:
             self.requires("jasper/2.0.16")
         if self.options.with_openjpeg:
@@ -257,7 +257,7 @@ class GdalConan(ConanFile):
         if self.options.with_odbc and self.settings.os != "Windows":
             self.requires("odbc/2.3.7")
         # if self.options.with_dods_root:
-        #     self.requires("libdap/x.x.x")
+        #     self.requires("libdap/3.20.6")
         if self.options.with_curl:
             self.requires("libcurl/7.70.0")
         if self.options.with_xml2:
@@ -285,19 +285,19 @@ class GdalConan(ConanFile):
         # if self.options.with_freexl:
         #     self.requires("freexl/1.0.5")
         # if self.options.with_poppler:
-        #     self.requires("poppler/x.x.x")
+        #     self.requires("poppler/0.83.0")
         # if self.options.with_podofo:
-        #     self.requires("podofo/x.x.x")
+        #     self.requires("podofo/0.9.6")
         # if self.options.with_pdfium:
         #     self.requires("pdfium/x.x.x")
         # if self.options.get_safe("with_tiledb"):
-        #     self.requires("tiledb/x.x.x")
+        #     self.requires("tiledb/2.0.2")
         # if self.options.with_rasdaman:
         #     self.requires("raslib/x.x.x")
         # if self.options.with_armadillo:
-        #     self.requires("armadillo/x.x.x")
+        #     self.requires("armadillo/9.880.1")
         # if self.options.with_cryptopp:
-        #     self.requires("cryptopp/x.x.x")
+        #     self.requires("cryptopp/8.2.0")
         if self.options.with_crypto:
             self.requires("openssl/1.1.1g")
         # if not self.options.without_lerc:
