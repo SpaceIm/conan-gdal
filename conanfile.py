@@ -451,6 +451,12 @@ class GdalConan(ConanFile):
         with tools.chdir(configure_dir):
             self.run("autoconf -i", win_bash=tools.os_info.is_windows)
         self._autotools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
+        with tools.environment_append(self._autotools.vars):
+            self.run("echo $LIBS")
+            self.run("echo $LDFLAGS")
+            self.run("echo $CFLAGS")
+            self.run("echo $CXXFLAGS")
+            self.run("echo $CPPFLAGS")
 
         args = []
         # Shared/Static
