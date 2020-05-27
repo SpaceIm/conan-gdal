@@ -477,9 +477,6 @@ class GdalConan(ConanFile):
         args.append("--disable-lto")
         # Symbols
         args.append("--with-hide_internal_symbols")
-        args.append("--without-rename-internal-libtiff-symbols")
-        args.append("--without-rename-internal-libgeotiff-symbols")
-        args.append("--with-rename-internal-shapelib-symbols") # we use internal shapelib, so renaming symbols is preferred
         # Do not add /usr/local/lib and /usr/local/include
         args.append("--without-local")
         # Threadsafe
