@@ -435,7 +435,11 @@ class GdalConan(ConanFile):
             args.append("HAVE_LERC=0")
         if self.options.with_charls:
             self._replace_in_nmake("#CHARLS_LIB=e:\\work\\GIS\gdal\\supportlibs\\charls\\bin\\Release\\x86\\CharLS.lib", "CHARLS_LIB=")
-            args.append("CHARLS_FLAGS=-DCHARLS_2_1")
+            charls_version = tools.Version(self.deps_cpp_info["charls"].version)
+            if charls_version >= "2.1.0":
+                args.append("CHARLS_FLAGS=-DCHARLS_2_1")
+            elif charls_version >= "2.0.0":
+                args.append("CHARLS_FLAGS=-DCHARLS_2")
         if self.options.get_safe("with_exr"):
             args.append("EXR_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["openexr"].include_paths)))
         # Inject required systems libs of dependencies
