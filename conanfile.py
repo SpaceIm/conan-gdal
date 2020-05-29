@@ -202,7 +202,7 @@ class GdalConan(ConanFile):
         if self.options.get_safe("with_libiconv", True):
             self.requires("libiconv/1.16")
         if self.options.get_safe("with_zstd"):
-            self.requires("zstd/1.4.4")
+            self.requires("zstd/1.4.5")
         if self.options.with_pg:
             self.requires("libpq/11.5")
         # if self.options.with_libgrass:
