@@ -539,7 +539,7 @@ class GdalConan(ConanFile):
         args.append("--with-mysql={}".format("yes" if bool(self.options.with_mysql) else "no"))
         args.append("--without-ingres") # commercial library
         args.append("--with-xerces={}".format(self._unix_path(self.deps_cpp_info["xerces-c"].rootpath) if self.options.with_xerces else "no"))
-        args.append("--with-expat={}".format(self._unix_path(self.deps_cpp_info["expat"].rootpath) if self.options.with_expat else "no"))
+        args.append("--with-expat={}".format("yes" if self.options.with_expat else "no"))
         args.append("--with-libkml={}".format(self._unix_path(self.deps_cpp_info["libkml"].rootpath) if self.options.with_libkml else "no"))
         args.append("--with-odbc={}".format(self._unix_path(self.deps_cpp_info["odbc"].rootpath) if self.options.with_odbc else "no"))
         args.append("--without-dods-root") # TODO: to implement when libdap lib available

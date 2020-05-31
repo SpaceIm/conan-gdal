@@ -89,7 +89,29 @@
    MYSQL_LIB=
    MYSQL_INC=
  
-@@ -4058,29 +4054,16 @@ AC_ARG_WITH(curl,
+@@ -3819,8 +3815,11 @@ dnl Check for Expat configuration.
+ dnl ---------------------------------------------------------------------------
+ 
+ dnl Expat 1.95.0 released in 2000-09-28
+-EXPAT_REQ_VERSION="1.95.0"
+-AX_LIB_EXPAT($EXPAT_REQ_VERSION)
++# AX_LIB_EXPAT is too fragile, it doesn't properly handle debug expat on Windows
++HAVE_EXPAT=no
++AC_ARG_WITH([expat], AS_HELP_STRING([--with-expat[=ARG]], [use Expat library (ARG=yes or no)]),,)
++if test x"$with_expat" = x"yes" ; then
++PKG_CHECK_MODULES([EXPAT], [expat >= 1.95.0], [HAVE_EXPAT=yes], [HAVE_EXPAT=no])
+ 
+ if test "$HAVE_EXPAT" = "yes"; then
+     LIBS="$EXPAT_LDFLAGS $LIBS"
+@@ -3833,6 +3832,7 @@ m4_foreach_w([frmt],EXPAT_DRIVERS,[
+   fi 
+ ])
+ 
++fi
+ fi
+ 
+ AC_SUBST([HAVE_EXPAT], $HAVE_EXPAT)
+@@ -4058,29 +4058,16 @@ AC_ARG_WITH(curl,
  dnl Clear some cache variables
  unset ac_cv_path_LIBCURL
  
@@ -124,7 +146,7 @@
  m4_foreach_w([frmt],CURL_FORMATS,[
    driver_enabled=m4_join([_],[$INTERNAL_FORMAT],frmt,[ENABLED])
    if test "x$driver_enabled" = "xyes"; then
-@@ -4120,7 +4103,6 @@ if test "x$with_xml2" = "xyes" -o "x$with_xml2" = "x" ; then
+@@ -4120,7 +4107,6 @@ if test "x$with_xml2" = "xyes" -o "x$with_xml2" = "x" ; then
    if test "${HAVE_LIBXML2}" = "yes"; then
      SAVED_LIBS="${LIBS}"
      LIBS="${LIBXML2_LIBS}"
@@ -132,7 +154,7 @@
      LIBS="${SAVED_LIBS}"
    fi
  
-@@ -4241,9 +4223,12 @@ dnl ---------------------------------------------------------------------------
+@@ -4241,9 +4227,12 @@ dnl ---------------------------------------------------------------------------
  dnl Check for SQLite (only if SpatiaLite is not detected)
  dnl ---------------------------------------------------------------------------
  
@@ -147,7 +169,7 @@
  
      if test "$HAVE_SQLITE3" = "yes"; then
          LIBS="$SQLITE3_LDFLAGS $LIBS"
-@@ -4596,8 +4581,12 @@ dnl ---------------------------------------------------------------------------
+@@ -4596,8 +4585,12 @@ dnl ---------------------------------------------------------------------------
  dnl Check if geos library is available.
  dnl ---------------------------------------------------------------------------
  
@@ -161,7 +183,7 @@
  if test "${HAVE_GEOS}" = "yes" ; then
  
    AC_MSG_NOTICE([Using C API from GEOS $GEOS_VERSION])
-@@ -4606,6 +4595,7 @@ if test "${HAVE_GEOS}" = "yes" ; then
+@@ -4606,6 +4599,7 @@ if test "${HAVE_GEOS}" = "yes" ; then
    LIBS="${GEOS_LIBS} ${LIBS}"
    HAVE_GEOS_RESULT="yes"
  fi
@@ -169,7 +191,7 @@
  
  dnl ---------------------------------------------------------------------------
  dnl Check if SFCGAL library is available.
-@@ -4640,20 +4630,18 @@ elif test "$with_qhull" = "yes" -o "$with_qhull" = "" ; then
+@@ -4640,20 +4634,18 @@ elif test "$with_qhull" = "yes" -o "$with_qhull" = "" ; then
    # qhull/qhull.h
    AC_CHECK_HEADERS([qhull/libqhull.h])
    if test "$ac_cv_header_qhull_libqhull_h" = "yes"; then
@@ -192,7 +214,7 @@
      fi
    fi
  
-@@ -4846,8 +4834,7 @@ if test "$with_libjson_c" = "external" -o "$with_libjson_c" = "" -o "$with_libjs
+@@ -4846,8 +4838,7 @@ if test "$with_libjson_c" = "external" -o "$with_libjson_c" = "" -o "$with_libjs
  elif test "$with_libjson_c" = "internal" ; then
    LIBJSONC_SETTING=internal
  elif test "$with_libjson_c" != "no"; then
@@ -202,7 +224,7 @@
  else
    AC_MSG_ERROR([libjson-c (internal or external) is required])
  fi
-@@ -5951,7 +5938,6 @@ else
+@@ -5951,7 +5942,6 @@ else
      # Test that the package found is for the right architecture
      saved_LIBS="$LIBS"
      LIBS="$EXR_LIBS"
