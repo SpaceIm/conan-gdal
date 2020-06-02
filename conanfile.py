@@ -451,6 +451,7 @@ class GdalConan(ConanFile):
     def _configure_autotools(self):
         if self._autotools:
             return self._autotools
+
         configure_dir = self._source_subfolder
         with tools.chdir(configure_dir):
             self.run("autoconf -i", win_bash=tools.os_info.is_windows)
@@ -584,8 +585,20 @@ class GdalConan(ConanFile):
         if self.options.get_safe("with_exr") is not None:
             args.append("--with-exr={}".format("yes" if self.options.with_exr else "no"))
 
+        # Some tricks in LDFLAGS env variable
+        env_build_vars = self._autotools.vars
+        if self.settings.os == "Linux":
+            # Inject lib directories in rpath in case of shared dependencies
+            rpath = ""
+            for libdir in self.deps_cpp_info.libdirs:
+                rpath += " -Wl,-rpath=\"{}\"".format(libdir)
+            env_build_vars["LDFLAGS"] = env_build_vars["LDFLAGS"] + rpath
+            # Inject -stdlib=libc++ for clang with libc++
+            if self.settings.compiler == "clang" and self._stdcpp_library == "c++":
+                env_build_vars["LDFLAGS"] = "-stdlib=libc++ " + env_build_vars["LDFLAGS"]
+
         with tools.chdir(configure_dir):
-            self._autotools.configure(args=args)
+            self._autotools.configure(args=args, vars=env_build_vars)
         return self._autotools
 
     def _unix_path(self, path):
