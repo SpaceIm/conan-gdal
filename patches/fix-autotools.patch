@@ -54,8 +54,8 @@
    echo "hdf4 support disabled."
  
 +elif test x"$with_hdf4" = x"yes" ; then
-+  PKG_CHECK_MODULES([HDF4], [hdf4], [HAVE_HDF4=yes], [HAVE_HDF4=no])
-+  PKG_CHECK_MODULES([HDF4], [hdf4 >= 4.2.5], [HDF4_HAS_MAXOPENFILES=yes], [HDF4_HAS_MAXOPENFILES=no])
++  PKG_CHECK_MODULES([HDF4], [hdf], [HAVE_HDF4=yes], [HAVE_HDF4=no])
++  PKG_CHECK_MODULES([HDF4], [hdf >= 4.2.5], [HDF4_HAS_MAXOPENFILES=yes], [HDF4_HAS_MAXOPENFILES=no])
 +  HDF4_INCLUDE="$HDF4_CFLAGS"
  else
  
