@@ -1,3 +1,14 @@
+--- a/GDALmake.opt.in
++++ b/GDALmake.opt.in
+@@ -601,7 +601,7 @@ endif
+ 
+ ifeq ($(HAVE_LIBTOOL), yes)
+ 
+-CONFIG_LIBS	=	$(GDAL_ROOT)/$(LIBGDAL)
++CONFIG_LIBS	=	$(GDAL_ROOT)/$(LIBGDAL) $(LIBS)
+ ifeq ($(MACOSX_FRAMEWORK),yes)
+ CONFIG_LIBS_INS	=	-L$(INST_LIB)/unix/lib -lgdal
+ else
 --- a/configure.ac
 +++ b/configure.ac
 @@ -1214,6 +1214,7 @@ dnl ---------------------------------------------------------------------------

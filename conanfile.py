@@ -585,17 +585,11 @@ class GdalConan(ConanFile):
         if self.options.get_safe("with_exr") is not None:
             args.append("--with-exr={}".format("yes" if self.options.with_exr else "no"))
 
-        # Some tricks in LDFLAGS env variable
+        # Inject -stdlib=libc++ for clang with libc++
         env_build_vars = self._autotools.vars
-        if self.settings.os == "Linux":
-            # Inject lib directories in rpath in case of shared dependencies
-            rpath = ""
-            for libdir in self.deps_cpp_info.libdirs:
-                rpath += " -Wl,-rpath=\"{}\"".format(libdir)
-            env_build_vars["LDFLAGS"] = env_build_vars["LDFLAGS"] + rpath
-            # Inject -stdlib=libc++ for clang with libc++
-            if self.settings.compiler == "clang" and self._stdcpp_library == "c++":
-                env_build_vars["LDFLAGS"] = "-stdlib=libc++ " + env_build_vars["LDFLAGS"]
+        if self.settings.compiler == "clang" and \
+           self.settings.os == "Linux" and self._stdcpp_library == "c++":
+            env_build_vars["LDFLAGS"] = "-stdlib=libc++ {}".format(env_build_vars["LDFLAGS"])
 
         with tools.chdir(configure_dir):
             self._autotools.configure(args=args, vars=env_build_vars)
