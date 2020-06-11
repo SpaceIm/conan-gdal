@@ -232,7 +232,7 @@ class GdalConan(ConanFile):
         # if self.options.with_sosi:
         #     self.requires("fyba/4.1.1")
         # if self.options.with_mongocxx:
-        #     self.requires("mongocxx/x.x.x")
+        #     self.requires("mongo-cxx-driver/3.4.2")
         if self.options.with_hdf4:
             self.requires("hdf4/4.2.15")
         if self.options.with_hdf5:
@@ -244,7 +244,7 @@ class GdalConan(ConanFile):
         if self.options.with_openjpeg:
             self.requires("openjpeg/2.3.1")
         # if self.options.with_fgdb:
-        #     self.requires("file-geodatabase-api/x.x.x")
+        #     self.requires("file-geodatabase-api/1.5.1")
         if self.options.with_mysql == "libmysqlclient":
             self.requires("libmysqlclient/8.0.17")
         # elif self.options.with_mysql == "mariadb-connector-c":
@@ -282,7 +282,7 @@ class GdalConan(ConanFile):
         if self.options.with_qhull:
             self.requires("qhull/7.3.2")
         # if self.options.with_opencl:
-        #     self.requires("opencl-headers/x.x.x")
+        #     self.requires("opencl-headers/20200313")
         if self.options.with_freexl:
             self.requires("freexl/1.0.5")
         # if self.options.with_poppler:
