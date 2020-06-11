@@ -591,7 +591,7 @@ class GdalConan(ConanFile):
         # Inject -stdlib=libc++ for clang with libc++
         env_build_vars = self._autotools.vars
         if self.settings.compiler == "clang" and \
-           self.settings.os == "Linux" and self._stdcpp_library == "c++":
+           self.settings.os == "Linux" and tools.stdcpp_library(self) == "c++":
             env_build_vars["LDFLAGS"] = "-stdlib=libc++ {}".format(env_build_vars["LDFLAGS"])
 
         with tools.chdir(configure_dir):
@@ -642,18 +642,8 @@ class GdalConan(ConanFile):
                 self.cpp_info.system_libs.append("pthread")
         elif self.settings.os == "Windows":
             self.cpp_info.system_libs.extend(["psapi", "ws2_32"])
-        if not self.options.shared and self._stdcpp_library:
-            self.cpp_info.system_libs.append(self._stdcpp_library)
+        if not self.options.shared and tools.stdcpp_library(self):
+            self.cpp_info.system_libs.append(tools.stdcpp_library(self))
         bin_path = os.path.join(self.package_folder, "bin")
         self.output.info("Appending PATH environment variable: {}".format(bin_path))
         self.env_info.PATH.append(bin_path)
-
-    @property
-    def _stdcpp_library(self):
-        libcxx = self.settings.get_safe("compiler.libcxx")
-        if libcxx in ("libstdc++", "libstdc++11"):
-            return "stdc++"
-        elif libcxx in ("libc++",):
-            return "c++"
-        else:
-            return False
