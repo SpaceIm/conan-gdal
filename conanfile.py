@@ -201,7 +201,7 @@ class GdalConan(ConanFile):
         if self.options.get_safe("with_zstd"):
             self.requires("zstd/1.4.5")
         if self.options.with_pg:
-            self.requires("libpq/12.2")
+            self.requires("libpq/13.0")
         # if self.options.with_libgrass:
         #     self.requires("libgrass/x.x.x")
         if self.options.with_cfitsio:
@@ -229,7 +229,7 @@ class GdalConan(ConanFile):
         # if self.options.with_sosi:
         #     self.requires("fyba/4.1.1")
         # if self.options.with_mongocxx:
-        #     self.requires("mongo-cxx-driver/3.4.2")
+        #     self.requires("mongocxx/x.x.x")
         if self.options.with_hdf4:
             self.requires("hdf4/4.2.15")
         if self.options.with_hdf5:
@@ -239,11 +239,11 @@ class GdalConan(ConanFile):
         # if self.options.with_netcdf:
         #     self.requires("netcdf-c/4.7.4")
         if self.options.with_jasper:
-            self.requires("jasper/2.0.19")
+            self.requires("jasper/2.0.21")
         if self.options.with_openjpeg:
             self.requires("openjpeg/2.3.1")
         # if self.options.with_fgdb:
-        #     self.requires("file-geodatabase-api/1.5.1")
+        #     self.requires("file-geodatabase-api/x.x.x")
         if self.options.with_mysql == "libmysqlclient":
             self.requires("libmysqlclient/8.0.17")
         # elif self.options.with_mysql == "mariadb-connector-c":
@@ -251,7 +251,7 @@ class GdalConan(ConanFile):
         if self.options.with_xerces:
             self.requires("xerces-c/3.2.3")
         if self.options.with_expat:
-            self.requires("expat/2.2.9")
+            self.requires("expat/2.2.10")
         if self.options.with_libkml:
             self.requires("libkml/1.3.0")
         if self.options.with_odbc and self.settings.os != "Windows":
@@ -259,13 +259,13 @@ class GdalConan(ConanFile):
         # if self.options.with_dods_root:
         #     self.requires("libdap/3.20.6")
         if self.options.with_curl:
-            self.requires("libcurl/7.72.0")
+            self.requires("libcurl/7.73.0")
         if self.options.with_xml2:
             self.requires("libxml2/2.9.10")
         # if self.options.with_spatialite:
         #     self.requires("libspatialite/4.3.0a")
         if self.options.get_safe("with_sqlite3"):
-            self.requires("sqlite3/3.32.3")
+            self.requires("sqlite3/3.33.0")
         # if self.options.with_rasterlite2:
         #     self.requires("rasterlite2/x.x.x")
         if self.options.get_safe("with_pcre"):
@@ -281,7 +281,7 @@ class GdalConan(ConanFile):
         if self.options.with_qhull:
             self.requires("qhull/8.0.1")
         # if self.options.with_opencl:
-        #     self.requires("opencl-headers/20200313")
+        #     self.requires("opencl-headers/x.x.x")
         if self.options.with_freexl:
             self.requires("freexl/1.0.6")
         # if self.options.with_poppler:
