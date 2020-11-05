@@ -364,7 +364,7 @@ class GdalConan(ConanFile):
             self._replace_in_nmake_opt("INCLUDE_GNM_FRMTS = YES", "")
         if not self.options.with_odbc:
             self._replace_in_nmake_opt("ODBC_SUPPORTED = 1", "")
-        if self.options.with_jpeg not in ["libjpeg", "libjpeg-turbo"]:
+        if not bool(self.options.with_jpeg):
             self._replace_in_nmake_opt("JPEG_SUPPORTED = 1", "")
         self._replace_in_nmake_opt("JPEG12_SUPPORTED = 1", "")
         if not self.options.with_pcidsk:
