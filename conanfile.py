@@ -634,8 +634,10 @@ class GdalConan(ConanFile):
             args.append("--without-pam")
         args.append("--without-poppler") # TODO: to implement when poppler lib available
         if self.options.with_podofo:
-            args.append("--with-podofo={}".format(tools.unix_path(self.deps_cpp_info["podofo"].rootpath)))
-            args.append("--with-podofo-lib=-l{}".format(" -l".join(self._gather_libs("podofo"))))
+            args.extend([
+                "--with-podofo={}".format(tools.unix_path(self.deps_cpp_info["podofo"].rootpath)),
+                "--with-podofo-lib=-l{}".format(" -l".join(self._gather_libs("podofo")))
+            ])
         else:
             args.append("--without-podofo")
         args.append("--without-pdfium") # TODO: to implement when pdfium lib available
