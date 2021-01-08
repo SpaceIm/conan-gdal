@@ -14,6 +14,9 @@ sources:
   "3.2.0":
     url: "https://github.com/OSGeo/gdal/releases/download/v3.2.0/gdal-3.2.0.tar.gz"
     sha256: "66dbab444f9fad113245cef241e52c4ab3e1f315e59759820e16a67e94931347"
+  "3.2.1":
+    url: "https://github.com/OSGeo/gdal/releases/download/v3.2.1/gdal-3.2.1.tar.gz"
+    sha256: "43d40ba940e3927e38f9e98062ff62f9fa993ceade82f26f16fab7e73edb572e"
 patches:
   "3.1.0":
     - patch_file: "patches/3.1.x/fix-include-jsonc.patch"
@@ -81,4 +84,13 @@ patches:
     - patch_file: "patches/3.2.x/fix-include-xerces.patch"
       base_path: "source_subfolder"
     - patch_file: "patches/3.2.x/missing-makefile-vc-heif.patch"
+      base_path: "source_subfolder"
+  "3.2.1":
+    - patch_file: "patches/3.2.x/fix-autotools.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/3.2.x/fix-nmake.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/3.2.x/fix-include-jsonc.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/3.2.x/fix-include-xerces.patch"
       base_path: "source_subfolder"
