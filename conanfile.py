@@ -44,7 +44,7 @@ class GdalConan(ConanFile):
         "with_hdf4": [True, False],
         "with_hdf5": [True, False],
         "with_kea": [True, False],
-        # "with_netcdf": [True, False],
+        "with_netcdf": [True, False],
         "with_jasper": [True, False],
         "with_openjpeg": [True, False],
         # "with_fgdb": [True, False],
@@ -66,7 +66,7 @@ class GdalConan(ConanFile):
         "with_geos": [True, False],
         # "with_sfcgal": [True, False],
         "with_qhull": [True, False],
-        # "with_opencl": [True, False],
+        "with_opencl": [True, False],
         "with_freexl": [True, False],
         "without_pam": [True, False],
         "with_poppler": [True, False],
@@ -108,7 +108,7 @@ class GdalConan(ConanFile):
         "with_hdf4": False,
         "with_hdf5": False,
         "with_kea": False,
-        # "with_netcdf": False,
+        "with_netcdf": False,
         "with_jasper": False,
         "with_openjpeg": False,
         # "with_fgdb": False,
@@ -130,7 +130,7 @@ class GdalConan(ConanFile):
         "with_geos": True,
         # "with_sfcgal": False,
         "with_qhull": True,
-        # "with_opencl": False,
+        "with_opencl": False,
         "with_freexl": False,
         "without_pam": False,
         "with_poppler": False,
@@ -211,7 +211,7 @@ class GdalConan(ConanFile):
         self.requires("json-c/0.15")
         self.requires("libgeotiff/1.6.0")
         # self.requires("libopencad/0.0.2") # TODO: use conan recipe when available instead of internal one
-        self.requires("libtiff/4.1.0")
+        self.requires("libtiff/4.2.0")
         self.requires("proj/7.2.1")
         if tools.Version(self.version) >= "3.1.0":
             self.requires("flatbuffers/1.12.0")
@@ -252,17 +252,17 @@ class GdalConan(ConanFile):
         # if self.options.with_sosi:
         #     self.requires("fyba/4.1.1")
         if self.options.with_mongocxx:
-            self.requires("mongo-cxx-driver/3.6.1")
+            self.requires("mongo-cxx-driver/3.6.2")
         if self.options.with_hdf4:
             self.requires("hdf4/4.2.15")
         if self.options.with_hdf5:
             self.requires("hdf5/1.12.0")
         if self.options.with_kea:
             self.requires("kealib/1.4.14")
-        # if self.options.with_netcdf:
-        #     self.requires("netcdf-c/4.7.4")
+        if self.options.with_netcdf:
+            self.requires("netcdf/4.7.4")
         if self.options.with_jasper:
-            self.requires("jasper/2.0.23")
+            self.requires("jasper/2.0.25")
         if self.options.with_openjpeg:
             self.requires("openjpeg/2.4.0")
         # if self.options.with_fgdb:
@@ -288,7 +288,7 @@ class GdalConan(ConanFile):
         # if self.options.with_spatialite:
         #     self.requires("libspatialite/4.3.0a")
         if self.options.get_safe("with_sqlite3"):
-            self.requires("sqlite3/3.34.0")
+            self.requires("sqlite3/3.34.1")
         # if self.options.with_rasterlite2:
         #     self.requires("rasterlite2/x.x.x")
         if self.options.get_safe("with_pcre"):
@@ -303,8 +303,9 @@ class GdalConan(ConanFile):
         #     self.requires("sfcgal/1.3.7")
         if self.options.with_qhull:
             self.requires("qhull/8.0.1")
-        # if self.options.with_opencl:
-        #     self.requires("opencl-headers/x.x.x")
+        if self.options.with_opencl:
+            self.requires("opencl-headers/2020.06.16")
+            self.requires("opencl-icd-loader/2020.06.16")
         if self.options.with_freexl:
             self.requires("freexl/1.0.6")
         if self.options.with_poppler:
@@ -320,15 +321,15 @@ class GdalConan(ConanFile):
         # if self.options.with_armadillo:
         #     self.requires("armadillo/9.880.1")
         if self.options.with_cryptopp:
-            self.requires("cryptopp/8.2.0")
+            self.requires("cryptopp/8.4.0")
         if self.options.with_crypto:
             self.requires("openssl/1.1.1i")
         # if not self.options.without_lerc:
         #     self.requires("lerc/2.1") # TODO: use conan recipe (not possible yet because lerc API is broken for GDAL)
         if self.options.get_safe("with_exr"):
-            self.requires("openexr/2.5.3")
+            self.requires("openexr/2.5.4")
         if self.options.get_safe("with_heif"):
-            self.requires("libheif/1.9.1")
+            self.requires("libheif/1.11.0")
 
     def validate(self):
         if self.options.with_qhull and self.options["qhull"].reentrant:
@@ -371,6 +372,15 @@ class GdalConan(ConanFile):
             embedded_libs.append(os.path.join("ogr", "ogrsf_frmts", "flatgeobuf", "flatbuffers"))
         for lib_subdir in embedded_libs:
             tools.rmdir(os.path.join(self._source_subfolder, lib_subdir))
+        # OpenCL headers
+        tools.replace_in_file(os.path.join(self._source_subfolder, "alg", "gdalwarpkernel_opencl.h"),
+                              "#include <OpenCL/OpenCL.h>",
+                              "#include <CL/opencl.h>")
+        # Workaround for nc-config not packaged in netcdf recipe (gdal relies on it to check nc4 and hdf4 support in netcdf):
+        if self.options.with_netcdf and self.options["netcdf"].netcdf4 and self.options["netcdf"].with_hdf5:
+            tools.replace_in_file(os.path.join(self._source_subfolder, "configure.ac"),
+                                  "NETCDF_HAS_NC4=no",
+                                  "NETCDF_HAS_NC4=yes")
 
     def _edit_nmake_opt(self):
         simd_intrinsics = str(self.options.get_safe("simd_intrinsics", False))
@@ -407,6 +417,10 @@ class GdalConan(ConanFile):
             self._replace_in_nmake_opt("#CHARLS_LIB=e:\\work\\GIS\gdal\\supportlibs\\charls\\bin\\Release\\x86\\CharLS.lib", "CHARLS_LIB=")
         # Inject required systems libs of dependencies
         self._replace_in_nmake_opt("ADD_LIBS	=", "ADD_LIBS={}".format(" ".join([lib + ".lib" for lib in self.deps_cpp_info.system_libs])))
+        # Trick to enable OpenCL (option missing in upstream nmake files)
+        if self.options.with_opencl:
+            tools.replace_in_file(os.path.join(self._source_subfolder, "alg", "makefile.vc"),
+                                  "$(GEOS_CFLAGS)", "$(GEOS_CFLAGS) /DHAVE_OPENCL")
 
     def _replace_in_nmake_opt(self, str1, str2):
         tools.replace_in_file(os.path.join(self.build_folder, self._source_subfolder, "nmake.opt"), str1, str2)
@@ -470,6 +484,13 @@ class GdalConan(ConanFile):
             args.append("PCRE_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["pcre"].include_paths)))
         if self.options.with_cfitsio:
             args.append("FITS_INC_DIR=\"{}\"".format(" -I".join(self.deps_cpp_info["cfitsio"].include_paths)))
+        if self.options.with_netcdf:
+            args.extend([
+                "NETCDF_SETTING=YES",
+                "NETCDF_INC_DIR=\"{}\"".format(" -I".join(self.deps_cpp_info["netcdf"].include_paths))
+            ])
+            if self.options["netcdf"].netcdf4 and self.options["netcdf"].with_hdf5:
+                args.append("NETCDF_HAS_NC4=YES")
         if self.options.with_curl:
             args.append("CURL_INC=\"-I{}\"".format(" -I".join(self.deps_cpp_info["libcurl"].include_paths)))
         if self.options.with_geos:
@@ -613,7 +634,7 @@ class GdalConan(ConanFile):
         args.append("--with-hdf4={}".format("yes" if self.options.with_hdf4 else "no"))
         args.append("--with-hdf5={}".format("yes" if self.options.with_hdf5 else "no"))
         args.append("--with-kea={}".format("yes" if self.options.with_kea else "no"))
-        args.append("--without-netcdf") # TODO: to implement when netcdf-c lib available
+        args.append("--with-netcdf={}".format(tools.unix_path(self.deps_cpp_info["netcdf"].rootpath) if self.options.with_netcdf else "no"))
         args.append("--with-jasper={}".format(tools.unix_path(self.deps_cpp_info["jasper"].rootpath) if self.options.with_jasper else "no"))
         args.append("--with-openjpeg={}".format("yes" if self.options.with_openjpeg else "no"))
         args.append("--without-fgdb") # TODO: to implement when file-geodatabase-api lib available
@@ -649,7 +670,14 @@ class GdalConan(ConanFile):
         args.append("--with-geos={}".format("yes" if self.options.with_geos else "no"))
         args.append("--without-sfcgal") # TODO: to implement when sfcgal lib available
         args.append("--with-qhull={}".format("yes" if self.options.with_qhull else "no"))
-        args.append("--without-opencl") # TODO: to implement when opencl-headers available (and also OpenCL lib?)
+        if self.options.with_opencl:
+            args.extend([
+                "--with-opencl",
+                "--with-opencl-include={}".format(tools.unix_path(self.deps_cpp_info["opencl-headers"].include_paths[0])),
+                "--with-opencl-lib=-L{}".format(tools.unix_path(self.deps_cpp_info["opencl-icd-loader"].lib_paths[0]))
+            ])
+        else:
+            args.append("--without-opencl")
         args.append("--with-freexl={}".format("yes" if self.options.with_freexl else "no"))
         args.append("--with-libjson-c={}".format(tools.unix_path(self.deps_cpp_info["json-c"].rootpath))) # always required !
         if self.options.without_pam:
