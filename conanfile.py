@@ -749,7 +749,8 @@ class GdalConan(ConanFile):
     def _autotools_build_environment(self):
         with tools.chdir(self._source_subfolder):
             with tools.run_environment(self):
-                yield
+                with tools.environment_append({"PKG_CONFIG_PATH": tools.unix_path(self.build_folder)}):
+                    yield
 
     def build(self):
         self._validate_dependency_graph()
