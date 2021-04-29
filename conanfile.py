@@ -288,7 +288,7 @@ class GdalConan(ConanFile):
         # if self.options.with_spatialite:
         #     self.requires("libspatialite/4.3.0a")
         if self.options.get_safe("with_sqlite3"):
-            self.requires("sqlite3/3.52.2")
+            self.requires("sqlite3/3.52.5")
         # if self.options.with_rasterlite2:
         #     self.requires("rasterlite2/x.x.x")
         if self.options.get_safe("with_pcre"):
@@ -311,7 +311,7 @@ class GdalConan(ConanFile):
         if self.options.with_poppler:
             self.requires("poppler/20.09.0")
         if self.options.with_podofo:
-            self.requires("podofo/0.9.6")
+            self.requires("podofo/0.9.7")
         # if self.options.with_pdfium:
         #     self.requires("pdfium/x.x.x")
         # if self.options.get_safe("with_tiledb"):
