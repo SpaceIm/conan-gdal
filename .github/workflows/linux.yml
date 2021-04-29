@@ -19,6 +19,8 @@ jobs:
         - { name: "GCC", version: "8", buildType: "Release"     }
         - { name: "GCC", version: "9", buildType: "Debug"       }
         - { name: "GCC", version: "9", buildType: "Release"     }
+        - { name: "GCC", version: "10", buildType: "Debug"      }
+        - { name: "GCC", version: "10", buildType: "Release"    }
         - { name: "CLANG", version: "3.9", buildType: "Debug"   }
         - { name: "CLANG", version: "3.9", buildType: "Release" }
         - { name: "CLANG", version: "4.0", buildType: "Debug"   }
@@ -33,6 +35,10 @@ jobs:
         - { name: "CLANG", version: "8", buildType: "Release"   }
         - { name: "CLANG", version: "9", buildType: "Debug"     }
         - { name: "CLANG", version: "9", buildType: "Release"   }
+        - { name: "CLANG", version: "10", buildType: "Debug"    }
+        - { name: "CLANG", version: "10", buildType: "Release"  }
+        - { name: "CLANG", version: "11", buildType: "Debug"    }
+        - { name: "CLANG", version: "11", buildType: "Release"  }
     name: ${{ matrix.compiler.name }} ${{ matrix.compiler.version }} ${{ matrix.compiler.buildType }}
     steps:
       - uses: actions/checkout@v2
