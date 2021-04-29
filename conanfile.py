@@ -736,6 +736,14 @@ class GdalConan(ConanFile):
             env_build_vars["LDFLAGS"] = "-stdlib=libc++ {}".format(env_build_vars["LDFLAGS"])
 
         self._autotools.configure(args=args, vars=env_build_vars)
+
+        # Do not let libtool fallback to static build (when we link static libs into shared gdal)
+        # TODO: find something more robust (patch in libtool recipe?), might break with another version of libtool
+        if self.options.shared and self.settings.os == "Windows":
+            tools.replace_in_file("libtool",
+                                  'deplibs_check_method="file_magic ^x86 archive import|^x86 DLL"', # this value comes from libtool.m4, patch it instead?
+                                  'deplibs_check_method="pass_all"')
+
         return self._autotools
 
     @contextmanager
