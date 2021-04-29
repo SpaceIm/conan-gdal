@@ -242,7 +242,7 @@ class GdalConan(ConanFile):
         if self.options.with_jpeg == "libjpeg":
             self.requires("libjpeg/9d")
         elif self.options.with_jpeg == "libjpeg-turbo":
-            self.requires("libjpeg-turbo/2.0.6")
+            self.requires("libjpeg-turbo/2.1.0")
         if self.options.with_charls:
             self.requires("charls/2.1.0")
         if self.options.with_gif:
@@ -262,7 +262,7 @@ class GdalConan(ConanFile):
         if self.options.with_netcdf:
             self.requires("netcdf/4.7.4")
         if self.options.with_jasper:
-            self.requires("jasper/2.0.27")
+            self.requires("jasper/2.0.32")
         if self.options.with_openjpeg:
             self.requires("openjpeg/2.4.0")
         # if self.options.with_fgdb:
@@ -270,7 +270,7 @@ class GdalConan(ConanFile):
         if self.options.with_mysql == "libmysqlclient":
             self.requires("libmysqlclient/8.0.17")
         elif self.options.with_mysql == "mariadb-connector-c":
-            self.requires("mariadb-connector-c/3.1.11")
+            self.requires("mariadb-connector-c/3.1.12")
         if self.options.with_xerces:
             self.requires("xerces-c/3.2.3")
         if self.options.with_expat:
@@ -358,6 +358,7 @@ class GdalConan(ConanFile):
     def _patch_sources(self):
         for patch in self.conan_data.get("patches", {}).get(self.version, []):
             tools.patch(**patch)
+
         # Remove embedded dependencies
         embedded_libs = [
             os.path.join("alg", "internal_libqhull"),
@@ -372,15 +373,29 @@ class GdalConan(ConanFile):
             embedded_libs.append(os.path.join("ogr", "ogrsf_frmts", "flatgeobuf", "flatbuffers"))
         for lib_subdir in embedded_libs:
             tools.rmdir(os.path.join(self._source_subfolder, lib_subdir))
+
         # OpenCL headers
         tools.replace_in_file(os.path.join(self._source_subfolder, "alg", "gdalwarpkernel_opencl.h"),
                               "#include <OpenCL/OpenCL.h>",
                               "#include <CL/opencl.h>")
-        # Workaround for nc-config not packaged in netcdf recipe (gdal relies on it to check nc4 and hdf4 support in netcdf):
-        if self.options.with_netcdf and self.options["netcdf"].netcdf4 and self.options["netcdf"].with_hdf5:
-            tools.replace_in_file(os.path.join(self._source_subfolder, "configure.ac"),
-                                  "NETCDF_HAS_NC4=no",
-                                  "NETCDF_HAS_NC4=yes")
+
+        # More patches for autotools build
+        if self.settings.compiler != "Visual Studio":
+            configure_ac = os.path.join(self._source_subfolder, "configure.ac")
+            # Workaround for nc-config not packaged in netcdf recipe (gdal relies on it to check nc4 and hdf4 support in netcdf):
+            if self.options.with_netcdf and self.options["netcdf"].netcdf4 and self.options["netcdf"].with_hdf5:
+                tools.replace_in_file(configure_ac,
+                                      "NETCDF_HAS_NC4=no",
+                                      "NETCDF_HAS_NC4=yes")
+            # Fix zlib checks and -lz injection to ensure to use external zlib and not fail others checks
+            if self.options.get_safe("with_zlib", True):
+                zlib_name = self.deps_cpp_info["zlib"].libs[0]
+                tools.replace_in_file(configure_ac,
+                                      "AC_CHECK_LIB(z,",
+                                      "AC_CHECK_LIB({},".format(zlib_name))
+                tools.replace_in_file(configure_ac,
+                                      "-lz ",
+                                      "-l{} ".format(zlib_name))
 
     def _edit_nmake_opt(self):
         simd_intrinsics = str(self.options.get_safe("simd_intrinsics", False))
