@@ -212,7 +212,7 @@ class GdalConan(ConanFile):
         self.requires("libgeotiff/1.6.0")
         # self.requires("libopencad/0.0.2") # TODO: use conan recipe when available instead of internal one
         self.requires("libtiff/4.2.0")
-        self.requires("proj/8.0.0")
+        self.requires("proj/8.0.1")
         if tools.Version(self.version) >= "3.1.0":
             self.requires("flatbuffers/1.12.0")
         if self.options.get_safe("with_zlib", True):
@@ -329,7 +329,7 @@ class GdalConan(ConanFile):
         if self.options.get_safe("with_exr"):
             self.requires("openexr/2.5.5")
         if self.options.get_safe("with_heif"):
-            self.requires("libheif/1.11.0")
+            self.requires("libheif/1.12.0")
 
     def validate(self):
         if self.options.with_qhull and self.options["qhull"].reentrant:
@@ -349,9 +349,9 @@ class GdalConan(ConanFile):
     def build_requirements(self):
         if self.settings.compiler != "Visual Studio":
             self.build_requires("libtool/2.4.6")
-            self.build_requires("pkgconf/1.7.3")
+            self.build_requires("pkgconf/1.7.4")
             if tools.os_info.is_windows and not tools.get_env("CONAN_BASH_PATH"):
-                self.build_requires("msys2/20200517")
+                self.build_requires("msys2/cci.latest")
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version])
