@@ -7,12 +7,14 @@ jobs:
       fail-fast: false
       matrix:
         compiler:
-        - { name: "APPLE_CLANG", version: "10.3", versionForConan: "10.0", buildType: "Debug"   }
-        - { name: "APPLE_CLANG", version: "10.3", versionForConan: "10.0", buildType: "Release" }
-        - { name: "APPLE_CLANG", version: "11.7", versionForConan: "11.0", buildType: "Debug"   }
-        - { name: "APPLE_CLANG", version: "11.7", versionForConan: "11.0", buildType: "Release" }
-        - { name: "APPLE_CLANG", version: "12.4", versionForConan: "12.0", buildType: "Debug"   }
-        - { name: "APPLE_CLANG", version: "12.4", versionForConan: "12.0", buildType: "Release" }
+          - { name: "APPLE_CLANG", version: "10.3", versionForConan: "10.0", buildType: "Debug"   }
+          - { name: "APPLE_CLANG", version: "10.3", versionForConan: "10.0", buildType: "Release" }
+          - { name: "APPLE_CLANG", version: "11.7", versionForConan: "11.0", buildType: "Debug"   }
+          - { name: "APPLE_CLANG", version: "11.7", versionForConan: "11.0", buildType: "Release" }
+          - { name: "APPLE_CLANG", version: "12.4", versionForConan: "12.0", buildType: "Debug"   }
+          - { name: "APPLE_CLANG", version: "12.4", versionForConan: "12.0", buildType: "Release" }
+        arch:
+          - { name: "x86_64"}
     name: ${{ matrix.compiler.name }} ${{ matrix.compiler.version }} ${{ matrix.compiler.buildType }}
     steps:
       - uses: actions/checkout@v2
@@ -24,10 +26,11 @@ jobs:
           xcode-version: ${{ matrix.compiler.version }}
       - name: Install Conan
         run: |
-          pip install bincrafters_package_tools
+          pip install conan_package_tools
           conan user
       - name: Run
         env:
+          CONAN_ARCHS: ${{ matrix.arch.name }}
           CONAN_BUILD_TYPES: ${{ matrix.compiler.buildType }}
         run: |
           export CONAN_${{ matrix.compiler.name }}_VERSIONS="${{ matrix.compiler.versionForConan }}"

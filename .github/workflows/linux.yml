@@ -7,38 +7,40 @@ jobs:
       fail-fast: false
       matrix:
         compiler:
-        - { name: "GCC", version: "4.9", buildType: "Debug"     }
-        - { name: "GCC", version: "4.9", buildType: "Release"   }
-        - { name: "GCC", version: "5", buildType: "Debug"       }
-        - { name: "GCC", version: "5", buildType: "Release"     }
-        - { name: "GCC", version: "6", buildType: "Debug"       }
-        - { name: "GCC", version: "6", buildType: "Release"     }
-        - { name: "GCC", version: "7", buildType: "Debug"       }
-        - { name: "GCC", version: "7", buildType: "Release"     }
-        - { name: "GCC", version: "8", buildType: "Debug"       }
-        - { name: "GCC", version: "8", buildType: "Release"     }
-        - { name: "GCC", version: "9", buildType: "Debug"       }
-        - { name: "GCC", version: "9", buildType: "Release"     }
-        - { name: "GCC", version: "10", buildType: "Debug"      }
-        - { name: "GCC", version: "10", buildType: "Release"    }
-        - { name: "CLANG", version: "3.9", buildType: "Debug"   }
-        - { name: "CLANG", version: "3.9", buildType: "Release" }
-        - { name: "CLANG", version: "4.0", buildType: "Debug"   }
-        - { name: "CLANG", version: "4.0", buildType: "Release" }
-        - { name: "CLANG", version: "5.0", buildType: "Debug"   }
-        - { name: "CLANG", version: "5.0", buildType: "Release" }
-        - { name: "CLANG", version: "6.0", buildType: "Debug"   }
-        - { name: "CLANG", version: "6.0", buildType: "Release" }
-        - { name: "CLANG", version: "7.0", buildType: "Debug"   }
-        - { name: "CLANG", version: "7.0", buildType: "Release" }
-        - { name: "CLANG", version: "8", buildType: "Debug"     }
-        - { name: "CLANG", version: "8", buildType: "Release"   }
-        - { name: "CLANG", version: "9", buildType: "Debug"     }
-        - { name: "CLANG", version: "9", buildType: "Release"   }
-        - { name: "CLANG", version: "10", buildType: "Debug"    }
-        - { name: "CLANG", version: "10", buildType: "Release"  }
-        - { name: "CLANG", version: "11", buildType: "Debug"    }
-        - { name: "CLANG", version: "11", buildType: "Release"  }
+          - { name: "GCC",   version: "4.9", dockerimage: "conanio/gcc49",   buildType: "Debug"    }
+          - { name: "GCC",   version: "4.9", dockerimage: "conanio/gcc49",   buildType: "Release"  }
+          - { name: "GCC",   version: "5",   dockerimage: "conanio/gcc5",    buildType: "Debug"    }
+          - { name: "GCC",   version: "5",   dockerimage: "conanio/gcc5",    buildType: "Release"  }
+          - { name: "GCC",   version: "6",   dockerimage: "conanio/gcc6",    buildType: "Debug"    }
+          - { name: "GCC",   version: "6",   dockerimage: "conanio/gcc6",    buildType: "Release"  }
+          - { name: "GCC",   version: "7",   dockerimage: "conanio/gcc7",    buildType: "Debug"    }
+          - { name: "GCC",   version: "7",   dockerimage: "conanio/gcc7",    buildType: "Release"  }
+          - { name: "GCC",   version: "8",   dockerimage: "conanio/gcc8",    buildType: "Debug"    }
+          - { name: "GCC",   version: "8",   dockerimage: "conanio/gcc8",    buildType: "Release"  }
+          - { name: "GCC",   version: "9",   dockerimage: "conanio/gcc9",    buildType: "Debug"    }
+          - { name: "GCC",   version: "9",   dockerimage: "conanio/gcc9",    buildType: "Release"  }
+          - { name: "GCC",   version: "10",  dockerimage: "conanio/gcc10",   buildType: "Debug"    }
+          - { name: "GCC",   version: "10",  dockerimage: "conanio/gcc10",   buildType: "Release"  }
+          - { name: "CLANG", version: "3.9", dockerimage: "conanio/clang39", buildType: "Debug"    }
+          - { name: "CLANG", version: "3.9", dockerimage: "conanio/clang39", buildType: "Release"  }
+          - { name: "CLANG", version: "4.0", dockerimage: "conanio/clang40", buildType: "Debug"    }
+          - { name: "CLANG", version: "4.0", dockerimage: "conanio/clang40", buildType: "Release"  }
+          - { name: "CLANG", version: "5.0", dockerimage: "conanio/clang50", buildType: "Debug"    }
+          - { name: "CLANG", version: "5.0", dockerimage: "conanio/clang50", buildType: "Release"  }
+          - { name: "CLANG", version: "6.0", dockerimage: "conanio/clang60", buildType: "Debug"    }
+          - { name: "CLANG", version: "6.0", dockerimage: "conanio/clang60", buildType: "Release"  }
+          - { name: "CLANG", version: "7.0", dockerimage: "conanio/clang70", buildType: "Debug"    }
+          - { name: "CLANG", version: "7.0", dockerimage: "conanio/clang70", buildType: "Release"  }
+          - { name: "CLANG", version: "8",   dockerimage: "conanio/clang8",  buildType: "Debug"    }
+          - { name: "CLANG", version: "8",   dockerimage: "conanio/clang8",  buildType: "Release"  }
+          - { name: "CLANG", version: "9",   dockerimage: "conanio/clang9",  buildType: "Debug"    }
+          - { name: "CLANG", version: "9",   dockerimage: "conanio/clang9",  buildType: "Release"  }
+          - { name: "CLANG", version: "10",  dockerimage: "conanio/clang10", buildType: "Debug"    }
+          - { name: "CLANG", version: "10",  dockerimage: "conanio/clang10", buildType: "Release"  }
+          - { name: "CLANG", version: "11",  dockerimage: "conanio/clang11", buildType: "Debug"    }
+          - { name: "CLANG", version: "11",  dockerimage: "conanio/clang11", buildType: "Release"  }
+        arch:
+          - { name: "x86_64"}
     name: ${{ matrix.compiler.name }} ${{ matrix.compiler.version }} ${{ matrix.compiler.buildType }}
     steps:
       - uses: actions/checkout@v2
@@ -47,15 +49,15 @@ jobs:
           python-version: '3.9.2'
       - name: Install Conan
         run: |
-          pip install bincrafters_package_tools
+          pip install conan_package_tools
           conan user
       - name: Run
         env:
-          CONAN_USE_DOCKER: 1
-          CONAN_LOGIN_USERNAME: ${{ secrets.CONAN_LOGIN_USERNAME }}
-          CONAN_PASSWORD: ${{ secrets.CONAN_PASSWORD }}
-          CONAN_BUILD_TYPES: ${{ matrix.compiler.buildType }}
           CONAN_SYSREQUIRES_MODE: enabled
+          CONAN_ARCHS: ${{ matrix.arch.name }}
+          CONAN_BUILD_TYPES: ${{ matrix.compiler.buildType }}
+          CONAN_USE_DOCKER: 1
+          CONAN_DOCKER_IMAGE: ${{ matrix.compiler.dockerimage }}
         run: |
           export CONAN_${{ matrix.compiler.name }}_VERSIONS="${{ matrix.compiler.version }}"
           python build.py

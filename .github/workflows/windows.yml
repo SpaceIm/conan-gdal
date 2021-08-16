@@ -11,6 +11,8 @@ jobs:
           - { os: windows-2016, name: "VISUAL", version: "15", buildType: "Release" }
           - { os: windows-2019, name: "VISUAL", version: "16", buildType: "Debug"   }
           - { os: windows-2019, name: "VISUAL", version: "16", buildType: "Release" }
+        arch:
+          - { name: "x86_64"}
     name: ${{ matrix.config.name }} ${{ matrix.config.version }} ${{ matrix.config.buildType }}
     steps:
       - uses: actions/checkout@v2
@@ -19,10 +21,11 @@ jobs:
           python-version: '3.9.2'
       - name: Install Conan
         run: |
-          pip install bincrafters_package_tools
+          pip install conan_package_tools
           conan user
       - name: Run
         env:
+          CONAN_ARCHS: ${{ matrix.arch.name }}
           CONAN_BUILD_TYPES: ${{ matrix.config.buildType }}
           CONAN_VISUAL_VERSIONS: ${{ matrix.config.version }}
           CONAN_CMAKE_GENERATOR: Ninja
